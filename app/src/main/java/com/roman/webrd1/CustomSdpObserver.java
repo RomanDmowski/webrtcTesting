@@ -9,14 +9,15 @@ class CustomSdpObserver implements SdpObserver {
     private String tag;
 
     CustomSdpObserver(String logTag) {
-        tag = this.getClass().getCanonicalName();
-        this.tag = this.tag + " " + logTag;
+        //tag = this.getClass().getCanonicalName();
+        this.tag = "CustomSdpObserver22 " + logTag;
     }
 
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
         Log.d(tag, "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
+       // Log.d(tag, "onCreateSuccess() called with: sessionDescription=xxxx");
     }
 
     @Override

@@ -15,24 +15,27 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-public final class RdWebSocketListener extends WebSocketListener {
+public  class RdWebSocketListener extends WebSocketListener {
 
-    private static final String TAG = "RdWebSocketListener";
+    private static final String TAG = "RdWebSocketListener22";
     private MainActivity mainActivity;
-    private PeerConnection peerConnection;
-    private WebSocket webSocket;
+//    private PeerConnection peerConnection;
+//    private WebSocket webSocket;
+//    private String remoteUser;
 
-    private RdWebSocketListener(MainActivity mainActivity) {
+    //public RdWebSocketListener(MainActivity mainActivity, String remoteUser) {
+    public RdWebSocketListener(MainActivity mainActivity) {
         super();
         this.mainActivity = mainActivity;
+//        this.remoteUser = remoteUser;
     }
 
-    public void setWebSocket(WebSocket webSocket) {
-        this.webSocket = webSocket;
-    }
-    public void setPeerConnection(PeerConnection peerConnection) {
-        this.peerConnection = peerConnection;
-    }
+//    public void setWebSocket(WebSocket webSocket) {
+//        this.webSocket = webSocket;
+//    }
+//    public void setPeerConnection(PeerConnection peerConnection) {
+//        this.peerConnection = peerConnection;
+//    }
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
@@ -57,20 +60,33 @@ public final class RdWebSocketListener extends WebSocketListener {
         super.onMessage(webSocket, text);
         Logging.d(TAG, "onMessage text : " + text);
         try {
-            JSONObject json = new JSONObject(new JSONObject(text).getString("utf8Data"));
-            if (json.getString("type").equals("candidate")) {
-                saveIceCandidate(json);
-            } else {
-                if (json.getString("type").equals("OFFER")) {
-                    System.out.println("..................................CUSTOMLISTENER####### SaveandAnswer text : " + text);
-                    saveOfferAndAnswer(json);
-                } else if (json.getString("type").equals("ANSWER")) {
-                    saveAnswer(json);
+
+            String typeOfMessage = new JSONObject(text).getString("type");
+
+            if (!typeOfMessage.equalsIgnoreCase("login")) {
+
+
+                JSONObject json = new JSONObject(new JSONObject(text).getString(typeOfMessage));
+                if (typeOfMessage.equals("candidate")) {
+                    //received ICE candidates from a remote peer
+                    mainActivity.saveIceCandidate(json);
+                } else {
+                    if (typeOfMessage.equals("offer")) {
+                        Logging.d(TAG, "Save Offer and Answer text : " + text);
+                        mainActivity.saveOfferAndAnswer(json);
+                        //saveOfferAndAnswer(json);
+
+                    } else if (typeOfMessage.equals("answer")) {
+                        mainActivity.saveAnswer(json);
+                    } else {
+                        Logging.d(TAG, "Else : " + text);
+                    }
                 }
+                }
+            } catch(JSONException e){
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
     }
 
     @Override
@@ -83,39 +99,11 @@ public final class RdWebSocketListener extends WebSocketListener {
     public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
         super.onOpen(webSocket, response);
         Logging.d(TAG, "Open : " + response );
+        //Logging.d(TAG, "Open" );
     }
 
-    void saveOfferAndAnswer(JSONObject json) throws JSONException {
-        SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER, json.getString("sdp"));
-        peerConnection.setRemoteDescription(new CustomSdpObserver("##### remoteSetRemoteDesc"), sessionDescription);
 
-        peerConnection.createAnswer(new CustomSdpObserver("##### remoteCreateOffer") {
-            @Override
-            public void onCreateSuccess(SessionDescription sessionDescription) {
-                super.onCreateSuccess(sessionDescription);
-                peerConnection.setLocalDescription(new CustomSdpObserver("#### remoteSetLocalDesc"), sessionDescription);
-                try {
-                    JSONObject json = new JSONObject();
-                    json.put("type", sessionDescription.type);
-                    json.put("sdp", sessionDescription.description);
-                    webSocket.send(json.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new MediaConstraints());
-    }
 
-    void saveAnswer(JSONObject json) throws JSONException {
-        SessionDescription sessionDescription;
-        sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER, json.getString("sdp"));
-        mainActivity.setRemoteDescription(sessionDescription);
-        //mainActivity.setRemoteDescription(sessionDescription);
-    }
-    void saveIceCandidate(JSONObject json) throws JSONException {
-        IceCandidate iceCandidate = new IceCandidate(json.getString("id"),Integer.parseInt(json.getString("label")),json.getString("candidate"));
-        peerConnection.addIceCandidate(iceCandidate);
-    }
 
 
 }

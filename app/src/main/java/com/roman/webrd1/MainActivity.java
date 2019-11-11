@@ -37,6 +37,8 @@ import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
+//import org.webrtc.CapturerObserver;
+//import org.webrtc.VideoRenderer;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoTrack;
@@ -44,7 +46,9 @@ import org.webrtc.VideoSource;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -53,14 +57,16 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    private String socketAddress = "http://10.0.2.2:1337";
-    //private String socketAddress = "http://192.168.0.108:1337";
+    private String socketAddress = "http://10.0.2.2:9090";
+    //private String socketAddress = "http://192.168.0.106:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
+
+    private String remoteUser = "rd2";
 
     private OkHttpClient webSocket;
     private WebSocket wsListener;
 
-    PeerConnectionFactory peerConnectionFactory;
+    private PeerConnectionFactory peerConnectionFactory;
     MediaConstraints audioConstraints;
     MediaConstraints videoConstraints;
     MediaConstraints sdpConstraints;
@@ -70,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     AudioTrack localAudioTrack;
     SurfaceViewRenderer localVideoView;
     SurfaceViewRenderer remoteVideoView;
+    SurfaceTextureHelper textureHelper;
 
     Button hangup;
     PeerConnection localPeer;
@@ -79,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean gotUserMedia;
     List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivityr22";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,16 +94,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         askForPermissions();
 
         setContentView(R.layout.activity_main);
-
-
-
-
         initViews();
         initVideos();
         getIceServers();
-
-
-        //SignallingClient.getInstance().init(this);
 
         start();
     }
@@ -120,182 +120,198 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initVideos() {
-        localVideoView.setMirror(true);
-        remoteVideoView.setMirror(false);
+
         rootEglBase = EglBase.create();
         localVideoView.init(rootEglBase.getEglBaseContext(), null);
         remoteVideoView.init(rootEglBase.getEglBaseContext(), null);
         localVideoView.setZOrderMediaOverlay(true);
-        //remoteVideoView.setZOrderMediaOverlay(true);
+        remoteVideoView.setZOrderMediaOverlay(true);
     }
 
+    //#############################################################################################################
+
+
+
+
+
+
+
+
     public void setRemoteDescription(SessionDescription sessionDescription) {
-        localPeer.setRemoteDescription(new CustomSdpObserver("localSetRemoteDesc"), sessionDescription);
+
+        localPeer.setRemoteDescription(new CustomSdpObserver("r22localSetRemoteDesc"), sessionDescription);
+
     }
+
+
+
+    public void saveOfferAndAnswer(JSONObject json) throws JSONException {
+        SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER, json.getString("sdp"));
+        localPeer.setRemoteDescription(new CustomSdpObserver("r22remoteSetRemoteDesc"), sessionDescription);
+
+        localPeer.createAnswer(new CustomSdpObserver("r22 remoteCreateOffer") {
+            @Override
+            public void onCreateSuccess(SessionDescription sessionDescription) {
+                super.onCreateSuccess(sessionDescription);
+                localPeer.setLocalDescription(new CustomSdpObserver("r22 remoteSetLocalDesc"), sessionDescription);
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("type", sessionDescription.type);
+                    json.put("sdp", sessionDescription.description);
+                    json.put("name", remoteUser);
+                    wsListener.send(json.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new MediaConstraints());
+    }
+
+
+    public void saveAnswer(JSONObject json) throws JSONException {
+        SessionDescription sessionDescription;
+        sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER, json.getString("sdp"));
+        setRemoteDescription(sessionDescription);
+        Logging.d(TAG, "Saving Answer ");
+        //mainActivity.setRemoteDescription(sessionDescription);
+    }
+
+
+    public void saveIceCandidate(JSONObject json) throws JSONException {
+        IceCandidate iceCandidate = new IceCandidate(json.getString("id"),Integer.parseInt(json.getString("label")),json.getString("candidate"));
+        localPeer.addIceCandidate(iceCandidate);
+        Logging.d(TAG, "Saving iceCandidate");
+    }
+
+
+
+
+    //##############################################################################################################
+
+
 
     private void getIceServers() {
 
 
-        PeerConnection.IceServer iceServer = PeerConnection.IceServer.builder("stun:u1.xirsys.com").createIceServer();
+        PeerConnection.IceServer iceServer = PeerConnection.IceServer.builder("stun:u1.xirsys.com")
+                .setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
+                .createIceServer();
 
         peerIceServers.add(iceServer);
         //rd
 
-        iceServer = PeerConnection.IceServer.builder("\"turn:u1.xirsys.com:80?transport=udp\"")
+        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=udp")
                 .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
                 .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
+                .setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
                 .createIceServer();
         peerIceServers.add(iceServer);
 
-        iceServer = PeerConnection.IceServer.builder("\"turn:u1.xirsys.com:80?transport=tcp\"")
+        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=tcp")
                 .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
                 .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
+                .setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
                 .createIceServer();
         peerIceServers.add(iceServer);
 
-
-//        //get Ice servers using xirsys
-//        byte[] data = new byte[0];
-//        try {
-//            data = ("<xirsys_ident>:<xirsys_secret>").getBytes("UTF-8");
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-//        String authToken = "Basic " + Base64.encodeToString(data, Base64.NO_WRAP);
-//        Utils.getInstance().getRetrofitInstance().getIceCandidates(authToken).enqueue(new Callback<TurnServerPojo>() {
-//            @Override
-//            public void onResponse(@NonNull Call<TurnServerPojo> call, @NonNull Response<TurnServerPojo> response) {
-//                TurnServerPojo body = response.body();
-//                if (body != null) {
-//                    iceServers = body.iceServerList.iceServers;
-//                }
-//                for (PeerConnection.IceServer iceServer : iceServers) {
-//                    if (iceServer.credential == null) {
-//                        PeerConnection.IceServer peerIceServer = PeerConnection.IceServer.builder(iceServer.url).createIceServer();
-//                        peerIceServers.add(peerIceServer);
-//                    } else {
-//                        PeerConnection.IceServer peerIceServer = PeerConnection.IceServer.builder(iceServer.url)
-//                                .setUsername(iceServer.username)
-//                                .setPassword(iceServer.credential)
-//                                .createIceServer();
-//                        peerIceServers.add(peerIceServer);
-//                    }
-//                }
-//                Log.d("onApiResponse", "IceServers\n" + iceServers.toString());
-//            }
-//
-//            @Override
-//            public void onFailure(@NonNull Call<TurnServerPojo> call, @NonNull Throwable t) {
-//                t.printStackTrace();
-//            }
-//        });
     }
 
 
     public void start() {
-        //Initialize PeerConnectionFactory globals.
+
+
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(this)
                         .setEnableVideoHwAcceleration(true)
                         .createInitializationOptions();
         PeerConnectionFactory.initialize(initializationOptions);
 
-        //Create a new PeerConnectionFactory instance - using Hardware encoder and decoder.
-        PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
+
+        PeerConnectionFactory.Options options= new PeerConnectionFactory.Options();
 
         DefaultVideoEncoderFactory defaultVideoEncoderFactory = new DefaultVideoEncoderFactory(
                 rootEglBase.getEglBaseContext(),  /* enableIntelVp8Encoder */true,  /* enableH264HighProfile */true);
-
         DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(rootEglBase.getEglBaseContext());
-        //peerConnectionFactory = new PeerConnectionFactory(options, defaultVideoEncoderFactory, defaultVideoDecoderFactory);
 
-        PeerConnectionFactory peerConnectionFactory = PeerConnectionFactory.builder()
-                .setOptions(options)
-//                .setVideoDecoderFactory(defaultVideoDecoderFactory)
-//                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+
+
+        peerConnectionFactory=PeerConnectionFactory.builder()
+                //.setOptions(options)
+                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
 
-        //Now create a VideoCapturer instance.
-        VideoCapturer videoCapturerAndroid;
-        videoCapturerAndroid = createCameraCapturer();
 
-        MediaConstraints constraints=new MediaConstraints();
+        VideoCapturer videoCapturer=createCameraCapturer();
 
-//        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
-//        audioConstraints = new MediaConstraints();
-//        videoConstraints = new MediaConstraints();
+        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
+        audioConstraints = new MediaConstraints();
+        videoConstraints = new MediaConstraints();
+
+        //suggestion from GitHub
+
+        sdpConstraints = new MediaConstraints(); //was missing
+
+
+
+
+        //VideoSource videoSource=peerConnectionFactory.createVideoSource(false);
+        VideoSource videoSource=peerConnectionFactory.createVideoSource(videoCapturer);
+        localVideoTrack=peerConnectionFactory.createVideoTrack("100",videoSource);
+        //localVideoTrack.setEnabled(true);
+        audioSource=peerConnectionFactory.createAudioSource(audioConstraints);
+        localAudioTrack=peerConnectionFactory.createAudioTrack("101",audioSource);
+        //localAudioTrack.setEnabled(true);
+
+//        MediaStream localMediaStream = peerConnectionFactory.createLocalMediaStream("105");
+//        localMediaStream.addTrack(localAudioTrack);
+//        localMediaStream.addTrack(localVideoTrack);
 //
-//        //suggestion from GitHub
-//        sdpConstraints = new MediaConstraints(); //was missing
+//        VideoRenderer localVideoRenderer =
 
-        //Create a VideoSource instance
-        if (videoCapturerAndroid != null) {
-            videoSource = peerConnectionFactory.createVideoSource(videoCapturerAndroid);
-        }
-
-        SurfaceTextureHelper textureHelper=SurfaceTextureHelper.create(Thread.currentThread().getName(),rootEglBase.getEglBaseContext());
-
-        videoCapturerAndroid.initialize(textureHelper,this,videoSource.getCapturerObserver());
-
-            videoCapturerAndroid.startCapture(640, 480, 30);
+        textureHelper=SurfaceTextureHelper.create(Thread.currentThread().getName(),rootEglBase.getEglBaseContext());
+        videoCapturer.initialize(textureHelper,this,videoSource.getCapturerObserver());
 
 
 
-
-        localVideoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
-        localVideoTrack.setEnabled(true);
-
-
-        //create an AudioSource instance
-        audioSource = peerConnectionFactory.createAudioSource(constraints);
-        localAudioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
 
         //videoCapturer.startCapture(1024,720,30);//capture in HD
         //videoCapturer.startCapture(640,480,30);//capture in SD
-
-
+        videoCapturer.startCapture(320,240,30);//capture in LD
 
         localVideoView.setVisibility(View.VISIBLE);
-        // And finally, with our VideoRenderer ready, we
-        // can add our renderer to the VideoTrack.
+        localVideoView.setMirror(true);
+        //localVideoView.init(rootEglBase.getEglBaseContext(),null);
+
 
         localVideoTrack.addSink(localVideoView);
 
-//        final VideoRenderer localRenderer = new VideoRenderer(localVideoView);
-//        localVideoTrack.addRenderer(localRenderer);
 
-        gotUserMedia = true;
-//        if (SignallingClient.getInstance().isInitiator) {
-//            onTryToStart();
-//        }
+        createPeerConnection();
+        createLocalSocket();
+
+
+
+
+        //addStreamToLocalPeer();
+        //doCall();
+
+        //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
+        Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
+        //org.webrtcLogging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
     }
+
+
     public void createLocalSocket() {
         Request request = new Request.Builder().url(socketAddress).build();
-        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
         RdWebSocketListener listener = new RdWebSocketListener(this);
-        listener.setPeerConnection(localPeer);
+        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
         webSocket = okHttpClientBuilder.build();
         wsListener = webSocket.newWebSocket(request, listener);
-        listener.setWebSocket(wsListener);
         webSocket.dispatcher().executorService().shutdown();
+        Log.d("r22createLocalSocket->", "DONE");
     }
 
-    /**
-     * This method will be called directly by the app when it is the initiator and has got the local media
-     * or when the remote peer sends a message through socket that it is ready to transmit AV data
-     */
-//    @Override
-//    public void onTryToStart() {
-//        runOnUiThread(() -> {
-//            if (!SignallingClient.getInstance().isStarted && localVideoTrack != null && SignallingClient.getInstance().isChannelReady) {
-//                createPeerConnection();
-//                SignallingClient.getInstance().isStarted = true;
-//                if (SignallingClient.getInstance().isInitiator) {
-//                    doCall();
-//                }
-//            }
-//        });
-//    }
 
 
     /**
@@ -307,28 +323,77 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TCP candidates are only useful when connecting to a server that supports
         // ICE-TCP.
         rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
-        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
-        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
+        //rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
+        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXCOMPAT;
+        //rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
+        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
         rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
         // Use ECDSA encryption.
+
         rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
-        localPeer = peerConnectionFactory.createPeerConnection(rtcConfig, new CustomPeerConnectionObserver("localPeerCreation") {
+        //rtcConfig.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN;
+
+
+
+
+
+        localPeer = peerConnectionFactory.createPeerConnection(rtcConfig, new RdPeerConnectionObserver("localPeerCreation") {
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
+                Log.d("Mainr22", "onIceCandidate");
                 super.onIceCandidate(iceCandidate);
-//                onIceCandidateReceived(iceCandidate);
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("type", "candidate");
+                    json.put("label", iceCandidate.sdpMLineIndex);
+                    json.put("id", iceCandidate.sdpMid);
+                    json.put("candidate", iceCandidate.sdp);
+                    json.put("name", remoteUser);
+                    wsListener.send(json.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+//                super.onIceCandidate(iceCandidate);
+//                Map<String, String> iceCandidateParams = new HashMap<>();
+//                iceCandidateParams.put("sdpMid", iceCandidate.sdpMid);
+//                iceCandidateParams.put("sdpMLineIndex", Integer.toString(iceCandidate.sdpMLineIndex));
+//                iceCandidateParams.put("candidate", iceCandidate.sdp);
+//                if (webSocketAdapter.getUserId() != null) {
+//                    iceCandidateParams.put("endpointName", webSocketAdapter.getUserId());
+//                    webSocketAdapter.sendJson(webSocket, "onIceCandidate", iceCandidateParams);
+//                } else {
+//                    webSocketAdapter.addIceCandidate(iceCandidateParams);
+//                }
+
+
             }
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
-                showToast("Received Remote stream");
+                //showToast("Received Remote stream");
                 super.onAddStream(mediaStream);
-                gotRemoteStream(mediaStream);
+                final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
+                try {
+                    remoteVideoView.setVisibility(View.VISIBLE);
+                    videoTrack.addSink(remoteVideoView);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onIceGatheringChange(PeerConnection.IceGatheringState iceGatheringState) {
+                super.onIceGatheringChange(iceGatheringState);
+
             }
         });
-
-        addStreamToLocalPeer();
+        Log.d("createPeerConnection->", "DONE");
     }
+
+
+
+
 
     /**
      * Adding the stream to the localpeer
@@ -338,7 +403,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
         stream.addTrack(localAudioTrack);
         stream.addTrack(localVideoTrack);
-        localPeer.addStream(stream);
+//        try {
+            localPeer.addStream(stream);
+//        }
+//        catch (Throwable e) {
+//            Log.e("TestApplication", "Uncaught exception is: ", e);
+//        }
+       //
     }
 
     /**
@@ -346,38 +417,131 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * to remote peer
      */
     private void doCall() {
-        sdpConstraints = new MediaConstraints();
+
+        sendLogin("rd1");
+        //sdpConstraints = new MediaConstraints();
         sdpConstraints.mandatory.add(
-                new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+                new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
         sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                "OfferToReceiveVideo", "true"));
-        localPeer.createOffer(new CustomSdpObserver("localCreateOffer") {
+                "offerToReceiveVideo", "true"));
+
+
+
+//        CustomSdpObserver testSdpObserver = new CustomSdpObserver("localCreateOffer") {
+//            @Override
+//            public void onCreateSuccess(SessionDescription sessionDescription) {
+//                super.onCreateSuccess(sessionDescription);
+//                //Log.d("onCreateSuccess", "Creating and sending offer to: ");
+//                Log.d("r22onCreateOfferMain", "onCreateSuccess() called with: sessionDescription = [" + sessionDescription + "]");
+//                localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDesc"), sessionDescription);
+//                //localPeer.setLocalDescription();
+//                testCreateOffer(sessionDescription);
+////                //Sending the offer
+////                try {
+////                    JSONObject json = new JSONObject();
+////                    json.put("type", sessionDescription.type);
+////                    json.put("sdp", sessionDescription.description);
+////                    json.put("name", remoteUser);
+////                    wsListener.send(json.toString());
+////
+////                } catch (Throwable e) {
+////                    Log.e("TestApplication", "Uncaught exception is: ", e);
+////                }
+//            }
+//        };
+//
+//        localPeer.createOffer(testSdpObserver, sdpConstraints);
+
+
+        MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
+        stream.addTrack(localAudioTrack);
+        stream.addTrack(localVideoTrack);
+        localPeer.addStream(stream);
+
+        localPeer.createOffer(new CustomSdpObserver("r22localCreateOffer")
+        {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
+                //Log.d("onCreateSuccess", "Creating and sending offer to: ");
+
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDesc"), sessionDescription);
-                Log.d("onCreateSuccess", "SignallingClient emit ");
-                //SignallingClient.getInstance().emitMessage(sessionDescription);
+                Log.d("Mainr22", "localPeer.createOffer setLocalDescription = [" + sessionDescription + "]");
+                sendOffer(sessionDescription);
             }
-        }, sdpConstraints);
+        }
+        , sdpConstraints);
+
+        Log.d("Mainr22", "localPeer.createOffer DONE");
+        Log.d("AFTERcreateOffer->", "DONE");
+
     }
+
+    void sendLogin (String myName) {
+        try {
+            JSONObject json = new JSONObject();
+
+            json.put("type", "login");
+            json.put("name", myName);
+            wsListener.send(json.toString());
+
+        } catch (Throwable e) {
+            Log.e("SendLogin", "Uncaught exception is: ", e);
+        }
+    }
+    void sendOffer (SessionDescription sessionDescription) {
+        //Sending the offer
+        try {
+            JSONObject json = new JSONObject();
+            JSONObject offer = new JSONObject();
+            //offer.put("type", sessionDescription.type);
+            offer.put("type", "offer");
+            offer.put("sdp", sessionDescription.description);
+
+            json.put("type", "offer");
+            json.put("offer", offer);
+            json.put("name", remoteUser);
+            wsListener.send(json.toString());
+            Log.d("Mainr22", "sendOFFER=" + json.toString());
+
+        } catch (Throwable e) {
+            Log.e("sendOffer", "Uncaught exception is: ", e);
+        }
+    }
+
+    void testCreateOffer2 () {
+        //Sending the offer
+        try {
+            JSONObject json = new JSONObject();
+            json.put("type", "OFFER");
+            json.put("sdp", "Description");
+            json.put("name", remoteUser);
+            wsListener.send(json.toString());
+
+        } catch (Throwable e) {
+            Log.e("TestApplication", "Uncaught exception is: ", e);
+        }
+    }
+
+
+
 
     /**
      * Received remote peer's media stream. we will get the first video track and render it
      */
-    private void gotRemoteStream(MediaStream stream) {
-        //we have remote video stream. add to the renderer.
-        final VideoTrack videoTrack = stream.videoTracks.get(0);
-        runOnUiThread(() -> {
-            try {
-                remoteVideoView.setVisibility(View.VISIBLE);
-                videoTrack.addSink(remoteVideoView);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-    }
+//    private void gotRemoteStream(MediaStream stream) {
+//        //we have remote video stream. add to the renderer.
+//        final VideoTrack videoTrack = stream.videoTracks.get(0);
+//        runOnUiThread(() -> {
+//            try {
+//                remoteVideoView.setVisibility(View.VISIBLE);
+//                videoTrack.addSink(remoteVideoView);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
+//
+//    }
 
 
     /**
@@ -481,19 +645,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 //
 //
-    private void updateVideoViews(final boolean remoteVisible) {
-        runOnUiThread(() -> {
-            ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
-            if (remoteVisible) {
-                params.height = dpToPx(100);
-                params.width = dpToPx(100);
-            } else {
-                params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            }
-            localVideoView.setLayoutParams(params);
-        });
-
-    }
+//    private void updateVideoViews(final boolean remoteVisible) {
+//        runOnUiThread(() -> {
+//            ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
+//            if (remoteVisible) {
+//                params.height = dpToPx(100);
+//                params.width = dpToPx(100);
+//            } else {
+//                params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+//            }
+//            localVideoView.setLayoutParams(params);
+//        });
+//
+//    }
 
 
     /**
@@ -504,29 +668,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.end_call: {
-                hangup();
+                //hangup();
+                doCall();
+                //sendLogin("rd1");
+                //testCreateOffer2();
                 break;
             }
         }
     }
 
-    private void hangup() {
-        try {
-            localPeer.close();
-            localPeer = null;
-            //SignallingClient.getInstance().close();
-            updateVideoViews(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    void doTestOffer() {
 
     }
 
-    @Override
-    protected void onDestroy() {
-//        SignallingClient.getInstance().close();
-        super.onDestroy();
-    }
+//    private void hangup() {
+//        try {
+//            localPeer.close();
+//            localPeer = null;
+//            //SignallingClient.getInstance().close();
+//            updateVideoViews(false);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
+//    @Override
+//    protected void onDestroy() {
+////        SignallingClient.getInstance().close();
+//        super.onDestroy();
+//    }
 
     /**
      * Util Methods
@@ -537,16 +708,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void showToast(final String msg) {
-        runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
+        //runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
     }
 
     private VideoCapturer createCameraCapturer() {
+    //private CapturerObserver createCameraCapturer(){
 
+    CameraEnumerator enumerator;
 
-
-
-        CameraEnumerator enumerator;
-        //if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP ){
             enumerator = new Camera2Enumerator(this);
         } else {
@@ -561,6 +730,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (enumerator.isFrontFacing(dn)) {
                 Logging.d(TAG, "Creating front facing camera capturer.");
                 return enumerator.createCapturer(dn, null);
+
             }
         }
         //failed to get front facing cam

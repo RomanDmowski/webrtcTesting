@@ -8,98 +8,77 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.RtpReceiver;
 
-public class CustomPeerConnectionObserver implements PeerConnection.Observer {
+import okhttp3.WebSocket;
+
+class RdPeerConnectionObserver implements PeerConnection.Observer {
+
     private String logTag;
+    private String remoteUser;
+    private WebSocket wsListener;
 
 
-
-    CustomPeerConnectionObserver(String logTag) {
-
-        this.logTag = this.getClass().getCanonicalName();
-        this.logTag = this.logTag+" "+logTag;
+    RdPeerConnectionObserver( String logTag) {
+        //this.logTag = this.getClass().getCanonicalName();
+        this.logTag = "RdPeerConnectionObserver22 "+logTag;
 
     }
 
-
-
     @Override
-
     public void onSignalingChange(PeerConnection.SignalingState signalingState) {
         Log.d(logTag, "onSignalingChange() called with: signalingState = [" + signalingState + "]");
     }
 
     @Override
-
     public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
         Log.d(logTag, "onIceConnectionChange() called with: iceConnectionState = [" + iceConnectionState + "]");
     }
 
-
-
     @Override
-
     public void onIceConnectionReceivingChange(boolean b) {
         Log.d(logTag, "onIceConnectionReceivingChange() called with: b = [" + b + "]");
     }
 
-
-
     @Override
-
     public void onIceGatheringChange(PeerConnection.IceGatheringState iceGatheringState) {
         Log.d(logTag, "onIceGatheringChange() called with: iceGatheringState = [" + iceGatheringState + "]");
+
+
+
     }
 
-
-
     @Override
-
     public void onIceCandidate(IceCandidate iceCandidate) {
         Log.d(logTag, "onIceCandidate() called with: iceCandidate = [" + iceCandidate + "]");
+
+
     }
 
-
-
     @Override
-
     public void onIceCandidatesRemoved(IceCandidate[] iceCandidates) {
         Log.d(logTag, "onIceCandidatesRemoved() called with: iceCandidates = [" + iceCandidates + "]");
     }
 
-
-
     @Override
-
     public void onAddStream(MediaStream mediaStream) {
         Log.d(logTag, "onAddStream() called with: mediaStream = [" + mediaStream + "]");
     }
 
-
-
     @Override
-
     public void onRemoveStream(MediaStream mediaStream) {
         Log.d(logTag, "onRemoveStream() called with: mediaStream = [" + mediaStream + "]");
     }
 
-
-
     @Override
-
     public void onDataChannel(DataChannel dataChannel) {
         Log.d(logTag, "onDataChannel() called with: dataChannel = [" + dataChannel + "]");
     }
 
     @Override
-
     public void onRenegotiationNeeded() {
         Log.d(logTag, "onRenegotiationNeeded() called");
     }
 
-
-
     @Override
-
     public void onAddTrack(RtpReceiver rtpReceiver, MediaStream[] mediaStreams) {
         Log.d(logTag, "onAddTrack() called with: rtpReceiver = [" + rtpReceiver + "], mediaStreams = [" + mediaStreams + "]");
     }
