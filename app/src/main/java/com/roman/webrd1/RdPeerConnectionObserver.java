@@ -55,7 +55,7 @@ class RdPeerConnectionObserver implements PeerConnection.Observer {
 
     @Override
     public void onIceCandidatesRemoved(IceCandidate[] iceCandidates) {
-        Log.d(logTag, "onIceCandidatesRemoved() called with: iceCandidates = [" + iceCandidates + "]");
+        Log.d(logTag, "onIceCandidatesRemoved() called with: iceCandidates = [" + iceCandidates.toString() + "]");
     }
 
     @Override

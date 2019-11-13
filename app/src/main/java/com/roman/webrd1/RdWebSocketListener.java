@@ -4,18 +4,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.IceCandidate;
 import org.webrtc.Logging;
-import org.webrtc.MediaConstraints;
-import org.webrtc.PeerConnection;
-import org.webrtc.SessionDescription;
 
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-public  class RdWebSocketListener extends WebSocketListener {
+class RdWebSocketListener extends WebSocketListener {
 
     private static final String TAG = "RdWebSocketListener22";
     private MainActivity mainActivity;

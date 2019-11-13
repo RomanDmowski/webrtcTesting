@@ -4,19 +4,14 @@ package com.roman.webrd1;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,15 +35,11 @@ import org.webrtc.SurfaceViewRenderer;
 //import org.webrtc.CapturerObserver;
 //import org.webrtc.VideoRenderer;
 import org.webrtc.VideoCapturer;
-import org.webrtc.VideoRenderer;
 import org.webrtc.VideoTrack;
 import org.webrtc.VideoSource;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -57,34 +48,32 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    private String socketAddress = "http://10.0.2.2:9090";
     //private String socketAddress = "http://192.168.0.106:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
     private String remoteUser = "rd2";
 
-    private OkHttpClient webSocket;
     private WebSocket wsListener;
 
     private PeerConnectionFactory peerConnectionFactory;
-    MediaConstraints audioConstraints;
-    MediaConstraints videoConstraints;
-    MediaConstraints sdpConstraints;
+    private MediaConstraints audioConstraints;
+    private MediaConstraints videoConstraints;
+    private MediaConstraints sdpConstraints;
     VideoSource videoSource;
-    VideoTrack localVideoTrack;
-    AudioSource audioSource;
-    AudioTrack localAudioTrack;
-    SurfaceViewRenderer localVideoView;
-    SurfaceViewRenderer remoteVideoView;
-    SurfaceTextureHelper textureHelper;
+    private VideoTrack localVideoTrack;
+    private AudioSource audioSource;
+    private AudioTrack localAudioTrack;
+    private SurfaceViewRenderer localVideoView;
+    private SurfaceViewRenderer remoteVideoView;
+    private SurfaceTextureHelper textureHelper;
 
-    Button hangup;
-    PeerConnection localPeer;
+    private Button hangup;
+    private PeerConnection localPeer;
     //List<PeerConnection.IceServer> iceServers;
-    EglBase rootEglBase;
+    private EglBase rootEglBase;
 
     boolean gotUserMedia;
-    List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
+    private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
     private static final String TAG = "MainActivityr22";
 
@@ -101,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         start();
     }
 
-    public void askForPermissions() {
+    private void askForPermissions() {
         //ask permissions
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
@@ -116,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hangup = (Button)findViewById(R.id.end_call);
         localVideoView =  findViewById(R.id.local_gl_surface_view);
         remoteVideoView = (SurfaceViewRenderer)findViewById(R.id.remote_gl_surface_view);
-        hangup.setOnClickListener((View.OnClickListener) this);
+        hangup.setOnClickListener(this);
     }
 
     private void initVideos() {
@@ -137,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    public void setRemoteDescription(SessionDescription sessionDescription) {
+    private void setRemoteDescription(SessionDescription sessionDescription) {
 
         localPeer.setRemoteDescription(new CustomSdpObserver("r22localSetRemoteDesc"), sessionDescription);
 
@@ -178,13 +167,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     public void saveIceCandidate(JSONObject json) throws JSONException {
-        IceCandidate iceCandidate = new IceCandidate(json.getString("id"),Integer.parseInt(json.getString("label")),json.getString("candidate"));
+        IceCandidate iceCandidate = new IceCandidate(json.getString("sdpMid"),Integer.parseInt(json.getString("sdpMLineIndex")),json.getString("candidate"));
         localPeer.addIceCandidate(iceCandidate);
         Logging.d(TAG, "Saving iceCandidate");
     }
 
 
 
+//                    candidate.put("candidate", iceCandidate.sdp);
+//                    candidate.put("sdpMid", iceCandidate.sdpMid);
+//                    candidate.put("sdpMLineIndex", iceCandidate.sdpMLineIndex);
 
     //##############################################################################################################
 
@@ -217,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void start() {
+    private void start() {
 
 
         PeerConnectionFactory.InitializationOptions initializationOptions =
@@ -302,11 +294,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public void createLocalSocket() {
+    private void createLocalSocket() {
+        String socketAddress = "http://10.0.2.2:9090";
         Request request = new Request.Builder().url(socketAddress).build();
         RdWebSocketListener listener = new RdWebSocketListener(this);
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
-        webSocket = okHttpClientBuilder.build();
+        OkHttpClient webSocket = okHttpClientBuilder.build();
         wsListener = webSocket.newWebSocket(request, listener);
         webSocket.dispatcher().executorService().shutdown();
         Log.d("r22createLocalSocket->", "DONE");
@@ -343,13 +336,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("Mainr22", "onIceCandidate");
                 super.onIceCandidate(iceCandidate);
                 try {
+                    JSONObject candidate = new JSONObject();
                     JSONObject json = new JSONObject();
                     json.put("type", "candidate");
-                    json.put("label", iceCandidate.sdpMLineIndex);
-                    json.put("id", iceCandidate.sdpMid);
-                    json.put("candidate", iceCandidate.sdp);
+
+                    candidate.put("candidate", iceCandidate.sdp);
+                    candidate.put("sdpMid", iceCandidate.sdpMid);
+                    candidate.put("sdpMLineIndex", iceCandidate.sdpMLineIndex);
+
+                    json.put("candidate", candidate);
                     json.put("name", remoteUser);
                     wsListener.send(json.toString());
+                    Log.d("createPeerConnection->", "sent onIceCandidate=" + json.toString() );
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -477,7 +475,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    void sendLogin (String myName) {
+    @SuppressWarnings("SameParameterValue")
+    private void sendLogin(String myName) {
         try {
             JSONObject json = new JSONObject();
 
@@ -489,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e("SendLogin", "Uncaught exception is: ", e);
         }
     }
-    void sendOffer (SessionDescription sessionDescription) {
+    private void sendOffer(SessionDescription sessionDescription) {
         //Sending the offer
         try {
             JSONObject json = new JSONObject();
