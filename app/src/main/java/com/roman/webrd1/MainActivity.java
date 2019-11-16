@@ -11,7 +11,9 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,11 +49,11 @@ import okhttp3.WebSocket;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-
+    private String socketAddress = "http://10.0.2.2:9090";
     //private String socketAddress = "http://192.168.0.106:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
-    private String remoteUser = "rd2";
+    private String remoteUser = "rd1";
 
     private WebSocket wsListener;
 
@@ -102,9 +104,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void initViews() {
-        hangup = (Button)findViewById(R.id.end_call);
+        hangup = findViewById(R.id.end_call);
         localVideoView =  findViewById(R.id.local_gl_surface_view);
-        remoteVideoView = (SurfaceViewRenderer)findViewById(R.id.remote_gl_surface_view);
+        remoteVideoView = findViewById(R.id.remote_gl_surface_view);
         hangup.setOnClickListener(this);
     }
 
@@ -129,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setRemoteDescription(SessionDescription sessionDescription) {
 
         localPeer.setRemoteDescription(new CustomSdpObserver("r22localSetRemoteDesc"), sessionDescription);
+        updateVideoViews(true);
 
     }
 
@@ -145,15 +148,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 localPeer.setLocalDescription(new CustomSdpObserver("r22 remoteSetLocalDesc"), sessionDescription);
                 try {
                     JSONObject json = new JSONObject();
-                    json.put("type", sessionDescription.type);
-                    json.put("sdp", sessionDescription.description);
+                    JSONObject answer = new JSONObject();
+                    //json.put("type", sessionDescription.type);
+
+                    answer.put("type", "answer");
+                    answer.put("sdp", sessionDescription.description);
+
+                    json.put("type", "answer");
+                    json.put("answer",answer);
                     json.put("name", remoteUser);
                     wsListener.send(json.toString());
+                    Logging.d(TAG, "Sending answer: " + json.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         }, new MediaConstraints());
+
+        Logging.d(TAG, "localPeer Answer created");
     }
 
 
@@ -161,16 +173,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SessionDescription sessionDescription;
         sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER, json.getString("sdp"));
         setRemoteDescription(sessionDescription);
+        updateVideoViews(true);
         Logging.d(TAG, "Saving Answer ");
-        //mainActivity.setRemoteDescription(sessionDescription);
     }
 
 
     public void saveIceCandidate(JSONObject json) throws JSONException {
         IceCandidate iceCandidate = new IceCandidate(json.getString("sdpMid"),Integer.parseInt(json.getString("sdpMLineIndex")),json.getString("candidate"));
+
         localPeer.addIceCandidate(iceCandidate);
         Logging.d(TAG, "Saving iceCandidate");
     }
+
+
+
+
 
 
 
@@ -228,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         peerConnectionFactory=PeerConnectionFactory.builder()
-                //.setOptions(options)
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
@@ -272,30 +288,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoCapturer.startCapture(320,240,30);//capture in LD
 
         localVideoView.setVisibility(View.VISIBLE);
+        localVideoTrack.addSink(localVideoView);
         localVideoView.setMirror(true);
+        remoteVideoView.setMirror(true);
         //localVideoView.init(rootEglBase.getEglBaseContext(),null);
 
 
-        localVideoTrack.addSink(localVideoView);
+
 
 
         createPeerConnection();
         createLocalSocket();
 
 
-
+        sendLogin("rd2");
 
         //addStreamToLocalPeer();
         //doCall();
 
         //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
-        Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
+        //Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
         //org.webrtcLogging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
     }
 
 
     private void createLocalSocket() {
-        String socketAddress = "http://10.0.2.2:9090";
+
         Request request = new Request.Builder().url(socketAddress).build();
         RdWebSocketListener listener = new RdWebSocketListener(this);
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
@@ -316,10 +334,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TCP candidates are only useful when connecting to a server that supports
         // ICE-TCP.
         rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
-        //rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
-        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXCOMPAT;
-        //rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
-        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
+        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
+        //rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXCOMPAT;
+        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
+        //rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
         rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
         // Use ECDSA encryption.
 
@@ -370,14 +388,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onAddStream(MediaStream mediaStream) {
                 //showToast("Received Remote stream");
+                Log.d("createPeerConnection->", "Received Remote stream" );
                 super.onAddStream(mediaStream);
                 final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
-                try {
-                    remoteVideoView.setVisibility(View.VISIBLE);
-                    videoTrack.addSink(remoteVideoView);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                runOnUiThread(() -> {
+                    try {
+                        remoteVideoView.setVisibility(View.VISIBLE);
+                        videoTrack.addSink(remoteVideoView);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             @Override
@@ -416,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void doCall() {
 
-        sendLogin("rd1");
+        //sendLogin("rd1");
         //sdpConstraints = new MediaConstraints();
         sdpConstraints.mandatory.add(
                 new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
@@ -470,8 +492,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         , sdpConstraints);
 
-        Log.d("Mainr22", "localPeer.createOffer DONE");
-        Log.d("AFTERcreateOffer->", "DONE");
+        //Log.d("Mainr22", "localPeer.createOffer DONE");
+        //Log.d("AFTERcreateOffer->", "DONE");
 
     }
 
@@ -508,19 +530,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    void testCreateOffer2 () {
-        //Sending the offer
-        try {
-            JSONObject json = new JSONObject();
-            json.put("type", "OFFER");
-            json.put("sdp", "Description");
-            json.put("name", remoteUser);
-            wsListener.send(json.toString());
-
-        } catch (Throwable e) {
-            Log.e("TestApplication", "Uncaught exception is: ", e);
-        }
-    }
 
 
 
@@ -611,7 +620,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocal"), sessionDescription);
-//                SignallingClient.getInstance().emitMessage(sessionDescription);
+
+                //send answer
             }
         }, new MediaConstraints());
     }
@@ -644,19 +654,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 //
 //
-//    private void updateVideoViews(final boolean remoteVisible) {
-//        runOnUiThread(() -> {
-//            ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
-//            if (remoteVisible) {
-//                params.height = dpToPx(100);
-//                params.width = dpToPx(100);
-//            } else {
-//                params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-//            }
-//            localVideoView.setLayoutParams(params);
-//        });
-//
-//    }
+    private void updateVideoViews(final boolean remoteVisible) {
+        runOnUiThread(() -> {
+            ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
+            if (remoteVisible) {
+                params.height = dpToPx(100);
+                params.width = dpToPx(100);
+            } else {
+                params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            }
+            localVideoView.setLayoutParams(params);
+        });
+
+    }
 
 
     /**
@@ -676,9 +686,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    void doTestOffer() {
 
-    }
 
 //    private void hangup() {
 //        try {

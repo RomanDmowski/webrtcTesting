@@ -15,9 +15,7 @@ class RdWebSocketListener extends WebSocketListener {
 
     private static final String TAG = "RdWebSocketListener22";
     private MainActivity mainActivity;
-//    private PeerConnection peerConnection;
-//    private WebSocket webSocket;
-//    private String remoteUser;
+
 
     //public RdWebSocketListener(MainActivity mainActivity, String remoteUser) {
     public RdWebSocketListener(MainActivity mainActivity) {
@@ -26,12 +24,6 @@ class RdWebSocketListener extends WebSocketListener {
 //        this.remoteUser = remoteUser;
     }
 
-//    public void setWebSocket(WebSocket webSocket) {
-//        this.webSocket = webSocket;
-//    }
-//    public void setPeerConnection(PeerConnection peerConnection) {
-//        this.peerConnection = peerConnection;
-//    }
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
