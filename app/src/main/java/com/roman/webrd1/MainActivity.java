@@ -14,7 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
@@ -54,7 +56,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
     private String remoteUser = "rd2";
-    private String localUser = "rd1";
+    private String localUserLogin = "rd1";
+    private String localUserPassword = "password";
+    private String localUserRole = "role_camera";
+
 
     private WebSocket wsListener;
 
@@ -71,12 +76,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SurfaceTextureHelper textureHelper;
 
     private Button hangup;
+    private Button startCall;
     private PeerConnection localPeer;
-    //List<PeerConnection.IceServer> iceServers;
     private EglBase rootEglBase;
 
     //boolean gotUserMedia;
     private boolean isInitiator;
+    public boolean isWebSocketConnected;
     private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
     private static final String TAG = "MainActivityr22";
@@ -89,7 +95,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         initViews();
         initVideos();
-        getIceServers();
+        //getIceServers();
+
+        if (!isWebSocketConnected) {
+            createLocalSocket();
+            sendLogin(localUserLogin, localUserPassword, localUserRole);
+        }
 
         start();
     }
@@ -107,9 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private void initViews() {
         hangup = findViewById(R.id.end_call);
+        startCall = findViewById(R.id.start_call);
         localVideoView =  findViewById(R.id.local_gl_surface_view);
         remoteVideoView = findViewById(R.id.remote_gl_surface_view);
         hangup.setOnClickListener(this);
+        startCall.setOnClickListener(this);
     }
 
     private void initVideos() {
@@ -213,6 +226,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+    public void addIceServers(String jsonString) throws JSONException{
+        JSONArray myListsAll = new JSONArray(jsonString);
+
+        if (myListsAll.length() < 1 ) return;
+
+        PeerConnection.IceServer iceServer;
+
+
+        for (int i = 0; i < myListsAll.length(); i++) {
+            JSONObject jsonobject = (JSONObject) myListsAll.get(i);
+            String urlIce = jsonobject.optString("url");
+            String userIce = jsonobject.optString("username");
+            String passwordIce = jsonobject.optString("password");
+
+            if (userIce.isEmpty()) {
+                iceServer = PeerConnection.IceServer.builder(urlIce)
+                        .createIceServer();
+            } else {
+                iceServer = PeerConnection.IceServer.builder(urlIce)
+                        .setUsername(userIce)
+                        .setPassword(passwordIce)
+                        //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
+                        .createIceServer();
+            }
+            peerIceServers.add(iceServer);
+        }
+    }
 
 
 
@@ -252,10 +292,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+
+
+
     private void start() {
 
 
         isInitiator = false;    //default value
+        isWebSocketConnected=false;
+
 
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(this)
@@ -326,10 +371,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 //        createPeerConnection();
-        createLocalSocket();
-
-
-        sendLogin(localUser);
+//        createLocalSocket();
+//
+//
+//        sendLogin(localUserLogin, localUserPassword, localUserRole);
 
         //addStreamToLocalPeer();
         //doCall();
@@ -347,6 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
         OkHttpClient webSocket = okHttpClientBuilder.build();
         wsListener = webSocket.newWebSocket(request, listener);
+        //isWebSocketConnected=true;
         webSocket.dispatcher().executorService().shutdown();
         Log.d("r22createLocalSocket->", "DONE");
     }
@@ -442,25 +488,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
-
-    /**
-     * Adding the stream to the localpeer
-     */
-//    private void addStreamToLocalPeer() {
-//        //creating local mediastream
-//        MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
-//        stream.addTrack(localAudioTrack);
-//        stream.addTrack(localVideoTrack);
-////        try {
-//            localPeer.addStream(stream);
-////        }
-////        catch (Throwable e) {
-////            Log.e("TestApplication", "Uncaught exception is: ", e);
-////        }
-//       //
-//    }
-
     //@Override
 
     public void onTryToStart() {
@@ -507,8 +534,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
-                //Log.d("onCreateSuccess", "Creating and sending offer to: ");
-
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDescr22####"), sessionDescription);
                 Log.d("Mainr22", "localPeer.createOffer SET LOCAL DESCRIPTION = [" + sessionDescription + "]");
                 sendOffer(sessionDescription);
@@ -522,12 +547,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void sendLogin(String myName) {
+    private void sendLogin(String myName, String myPassword, String myRole) {
         try {
             JSONObject json = new JSONObject();
 
             json.put("type", "login");
             json.put("name", myName);
+            json.put("password",myPassword);
+            json.put("role",myRole);
             wsListener.send(json.toString());
 
         } catch (Throwable e) {
@@ -685,7 +712,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.height = dpToPx(100);
                 params.width = dpToPx(100);
             } else {
-                params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             }
             localVideoView.setLayoutParams(params);
         });
@@ -701,15 +728,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.end_call: {
-                //hangup();
+                hangup();
+                break;
+            }
+            case R.id.start_call: {
                 //doCall();
                 //sendLogin("rd1");
                 //testCreateOffer2();
 
                 isInitiator=true;
+                if (!isWebSocketConnected) {
+                    createLocalSocket();
+                    sendLogin(localUserLogin, localUserPassword, localUserRole);
+                }
                 onTryToStart();
-
-
                 break;
             }
         }
@@ -717,17 +749,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-//    private void hangup() {
-//        try {
-//            localPeer.close();
-//            localPeer = null;
-//            //SignallingClient.getInstance().close();
-//            updateVideoViews(false);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
+    private void hangup() {
+        try {
+            localPeer.close();
+            localPeer = null;
+            wsListener.close(1000, null);
+            //isWebSocketConnected=false;
+            updateVideoViews(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
 //    @Override
 //    protected void onDestroy() {

@@ -2,6 +2,7 @@ package com.roman.webrd1;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.Logging;
@@ -21,13 +22,13 @@ class RdWebSocketListener extends WebSocketListener {
     public RdWebSocketListener(MainActivity mainActivity) {
         super();
         this.mainActivity = mainActivity;
-//        this.remoteUser = remoteUser;
     }
 
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         super.onClosed(webSocket, code, reason);
+        mainActivity.isWebSocketConnected=false;
         Logging.d(TAG, "Closed :"  + code + " / " + reason );
     }
 
@@ -51,7 +52,16 @@ class RdWebSocketListener extends WebSocketListener {
 
             String typeOfMessage = new JSONObject(text).getString("type");
 
-            if (!typeOfMessage.equalsIgnoreCase("login")) {
+
+
+            if (typeOfMessage.equalsIgnoreCase("login"))
+
+            {
+                String jsonString = new JSONObject(text).getString("ice");
+                //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
+                mainActivity.addIceServers(jsonString);
+            }
+            else {
 
 
                 JSONObject json = new JSONObject(new JSONObject(text).getString(typeOfMessage));
@@ -86,6 +96,7 @@ class RdWebSocketListener extends WebSocketListener {
     @Override
     public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
         super.onOpen(webSocket, response);
+        mainActivity.isWebSocketConnected=true;
         Logging.d(TAG, "Open : " + response );
         //Logging.d(TAG, "Open" );
     }

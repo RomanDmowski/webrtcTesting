@@ -41,6 +41,13 @@
             android:layout_width="wrap_content"
             android:layout_margin="5dp"
             android:layout_height="wrap_content"
+            android:id="@+id/start_call"
+            android:text="Call" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
             android:id="@+id/end_call"
             android:text="Hangup" />
     </LinearLayout>
