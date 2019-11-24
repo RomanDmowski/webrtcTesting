@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String remoteUser = "rd2";
     private String localUserLogin = "rd1";
-    private String localUserPassword = "password";
+    private String localUserPassword = "pas4";
     private String localUserRole = "role_camera";
 
 
@@ -364,20 +364,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         localVideoTrack.addSink(localVideoView);
         localVideoView.setMirror(true);
         remoteVideoView.setMirror(true);
-        //localVideoView.init(rootEglBase.getEglBaseContext(),null);
-
-
-
-
-
-//        createPeerConnection();
-//        createLocalSocket();
-//
-//
-//        sendLogin(localUserLogin, localUserPassword, localUserRole);
-
-        //addStreamToLocalPeer();
-        //doCall();
 
         //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
         //Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
