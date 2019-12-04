@@ -57,9 +57,23 @@ class RdWebSocketListener extends WebSocketListener {
             if (typeOfMessage.equalsIgnoreCase("login"))
 
             {
-                String jsonString = new JSONObject(text).getString("ice");
-                //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
-                mainActivity.addIceServers(jsonString);
+                String jsonString = new JSONObject(text).getString("success");
+                if(jsonString.equalsIgnoreCase("false")) {
+                    Logging.d(TAG, "Login failed");
+                } else {
+                    jsonString = new JSONObject(text).getString("ice");
+                    //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
+                    mainActivity.addIceServers(jsonString);
+                }
+
+                jsonString = new JSONObject(text).getString("action");
+                Logging.d(TAG, "nextAction:" + jsonString);
+                if(jsonString.equalsIgnoreCase("startCall")){
+                    Logging.d(TAG, "isInitiator: true");
+                    mainActivity.isInitiator=true;
+                    mainActivity.onTryToStart();
+                }
+
             }
             else {
 

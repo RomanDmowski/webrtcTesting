@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.json.JSONArray;
@@ -55,10 +54,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //private String socketAddress = "http://192.168.0.110:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
-    private String remoteUser = "rd2";
-    private String localUserLogin = "rd1";
+    private String localUserRole = "c";
+    private String remoteUser = "rd1_d";
+    private String localUserLogin = "rd1" + "_" + localUserRole;
     private String localUserPassword = "pas4";
-    private String localUserRole = "role_camera";
+
 
 
     private WebSocket wsListener;
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EglBase rootEglBase;
 
     //boolean gotUserMedia;
-    private boolean isInitiator;
+    public boolean isInitiator;
     public boolean isWebSocketConnected;
     private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
@@ -90,6 +90,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        isInitiator = false;    //default value
+        isWebSocketConnected=false;
+
         askForPermissions();
 
         setContentView(R.layout.activity_main);
@@ -97,12 +101,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initVideos();
         //getIceServers();
 
+
+
+        startCamera();
+
         if (!isWebSocketConnected) {
             createLocalSocket();
-            sendLogin(localUserLogin, localUserPassword, localUserRole);
+            sendLogin(localUserLogin, localUserPassword, remoteUser);
         }
 
-        start();
+        //onTryToStart(); call this from WebSocketListener
     }
 
     private void askForPermissions() {
@@ -254,52 +262,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-
-
-//                    candidate.put("candidate", iceCandidate.sdp);
-//                    candidate.put("sdpMid", iceCandidate.sdpMid);
-//                    candidate.put("sdpMLineIndex", iceCandidate.sdpMLineIndex);
-
     //##############################################################################################################
 
 
 
-    private void getIceServers() {
+//    private void getIceServers() {
+//
+//
+//        PeerConnection.IceServer iceServer = PeerConnection.IceServer.builder("stun:u1.xirsys.com")
+//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
+//                .createIceServer();
+//
+//        peerIceServers.add(iceServer);
+//        //rd
+//
+//        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=udp")
+//                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
+//                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
+//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
+//                .createIceServer();
+//        peerIceServers.add(iceServer);
+//
+//        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=tcp")
+//                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
+//                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
+//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
+//                .createIceServer();
+//        peerIceServers.add(iceServer);
+//
+//    }
 
 
-        PeerConnection.IceServer iceServer = PeerConnection.IceServer.builder("stun:u1.xirsys.com")
-                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-                .createIceServer();
-
-        peerIceServers.add(iceServer);
-        //rd
-
-        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=udp")
-                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
-                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
-                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-                .createIceServer();
-        peerIceServers.add(iceServer);
-
-        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=tcp")
-                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
-                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
-                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-                .createIceServer();
-        peerIceServers.add(iceServer);
-
-    }
 
 
 
+    private void startCamera() {
 
 
-    private void start() {
 
-
-        isInitiator = false;    //default value
-        isWebSocketConnected=false;
 
 
         PeerConnectionFactory.InitializationOptions initializationOptions =
@@ -533,14 +533,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void sendLogin(String myName, String myPassword, String myRole) {
+    private void sendLogin(String myName, String myPassword, String otherUser) {
         try {
             JSONObject json = new JSONObject();
 
             json.put("type", "login");
             json.put("name", myName);
             json.put("password",myPassword);
-            json.put("role",myRole);
+            json.put("otherUser",otherUser);
             wsListener.send(json.toString());
 
         } catch (Throwable e) {
@@ -725,7 +725,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isInitiator=true;
                 if (!isWebSocketConnected) {
                     createLocalSocket();
-                    sendLogin(localUserLogin, localUserPassword, localUserRole);
+                    sendLogin(localUserLogin, localUserPassword, remoteUser);
                 }
                 onTryToStart();
                 break;
