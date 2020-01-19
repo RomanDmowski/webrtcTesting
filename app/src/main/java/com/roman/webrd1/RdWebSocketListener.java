@@ -2,7 +2,6 @@ package com.roman.webrd1;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.Logging;
@@ -41,7 +40,7 @@ class RdWebSocketListener extends WebSocketListener {
     @Override
     public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
         super.onFailure(webSocket, t, response);
-        Logging.d(TAG, "Error : " + t.getMessage());
+        Logging.d(TAG, "Error onFailure : " + t.getMessage());
     }
 
     @Override
@@ -64,14 +63,15 @@ class RdWebSocketListener extends WebSocketListener {
                     jsonString = new JSONObject(text).getString("ice");
                     //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
                     mainActivity.addIceServers(jsonString);
-                }
 
-                jsonString = new JSONObject(text).getString("action");
-                Logging.d(TAG, "nextAction:" + jsonString);
-                if(jsonString.equalsIgnoreCase("startCall")){
-                    Logging.d(TAG, "isInitiator: true");
-                    mainActivity.isInitiator=true;
-                    mainActivity.onTryToStart();
+
+                    jsonString = new JSONObject(text).getString("action");
+                    Logging.d(TAG, "nextAction:" + jsonString);
+                    if(jsonString.equalsIgnoreCase("startCall")){
+                        Logging.d(TAG, "isInitiator: true");
+                        mainActivity.isInitiator=true;
+                        mainActivity.tryToStart(500);
+                    }
                 }
 
             }
@@ -87,6 +87,7 @@ class RdWebSocketListener extends WebSocketListener {
                         Logging.d(TAG, "Save Offer and Answer text : " + text);
                         mainActivity.saveOfferAndAnswer(json);
                         //saveOfferAndAnswer(json);
+
 
                     } else if (typeOfMessage.equals("answer")) {
                         mainActivity.saveAnswer(json);

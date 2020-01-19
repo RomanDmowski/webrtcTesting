@@ -4,6 +4,10 @@ package com.roman.webrd1;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -51,11 +55,11 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String socketAddress = "http://10.0.2.2:9090";
-    //private String socketAddress = "http://192.168.0.110:9090";
+    //private String socketAddress = "http://192.168.0.111:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
-    private String localUserRole = "c";
-    private String remoteUser = "rd1_d";
+    private String localUserRole = "d";
+    private String remoteUser = "rd1_c";
     private String localUserLogin = "rd1" + "_" + localUserRole;
     private String localUserPassword = "pas4";
 
@@ -83,9 +87,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //boolean gotUserMedia;
     public boolean isInitiator;
     public boolean isWebSocketConnected;
+    public boolean isTryingReconnect;
     private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
     private static final String TAG = "MainActivityr22";
+
+
+
+    /* Constant values for the names of each respective lifecycle callback */
+    private static final String ON_CREATE = "onCreate";
+    private static final String ON_START = "onStart";
+    private static final String ON_RESUME = "onResume";
+    private static final String ON_PAUSE = "onPause";
+    private static final String ON_STOP = "onStop";
+    private static final String ON_RESTART = "onRestart";
+    private static final String ON_DESTROY = "onDestroy";
+    private static final String ON_SAVE_INSTANCE_STATE = "onSaveInstanceState";
+
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         isInitiator = false;    //default value
         isWebSocketConnected=false;
+        isTryingReconnect=false;
+
+        Logging.d(TAG, ON_CREATE);
 
         askForPermissions();
 
@@ -110,8 +136,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sendLogin(localUserLogin, localUserPassword, remoteUser);
         }
 
-        //onTryToStart(); call this from WebSocketListener
+        //tryToStart(); call this from WebSocketListener
+
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Logging.d(TAG, ON_START);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Logging.d(TAG,ON_RESUME);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        Logging.d(TAG,ON_PAUSE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Logging.d(TAG,ON_STOP);
+    }
+
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        Logging.d(TAG,ON_RESTART);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Logging.d(TAG,ON_DESTROY);
+        hangup();
+        super.onDestroy();
+
+    }
+
+
+
+
+
 
     private void askForPermissions() {
         //ask permissions
@@ -142,6 +218,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         remoteVideoView.setZOrderMediaOverlay(true);
     }
 
+
+
+//    public static void setCameraDisplayOrientation(Activity activity,
+//                                                   int cameraId, android.hardware.Camera camera) {
+//        android.hardware.Camera.CameraInfo info =
+//                new android.hardware.Camera.CameraInfo();
+//        android.hardware.Camera.getCameraInfo(cameraId, info);
+//        int rotation = activity.getWindowManager().getDefaultDisplay()
+//                .getRotation();
+//        int degrees = 0;
+//        switch (rotation) {
+//            case Surface.ROTATION_0: degrees = 0; break;
+//            case Surface.ROTATION_90: degrees = 90; break;
+//            case Surface.ROTATION_180: degrees = 180; break;
+//            case Surface.ROTATION_270: degrees = 270; break;
+//        }
+//
+//        int result;
+//        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//            result = (info.orientation + degrees) % 360;
+//            result = (360 - result) % 360;  // compensate the mirror
+//        } else {  // back-facing
+//            result = (info.orientation - degrees + 360) % 360;
+//        }
+//        camera.setDisplayOrientation(result);
+//    }
+
     //#############################################################################################################
 
 
@@ -163,21 +266,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void saveOfferAndAnswer(JSONObject json) throws JSONException {
 
         isInitiator=false;
-        onTryToStart();
+        //tryToStart(500);
+
+        createPeerConnection();
+
 
         sdpConstraints.mandatory.add(
                 new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
         sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                 "offerToReceiveVideo", "true"));
 
-
-
         MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
         stream.addTrack(localAudioTrack);
         stream.addTrack(localVideoTrack);
         localPeer.addStream(stream);
-
-
 
         SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER, json.getString("sdp"));
         Logging.d(TAG, "before SET REMOTE DESCRIPTION inside saveOfferAndAnswer");
@@ -344,12 +446,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         localAudioTrack=peerConnectionFactory.createAudioTrack("101",audioSource);
         //localAudioTrack.setEnabled(true);
 
-//        MediaStream localMediaStream = peerConnectionFactory.createLocalMediaStream("105");
-//        localMediaStream.addTrack(localAudioTrack);
-//        localMediaStream.addTrack(localVideoTrack);
-//
-//        VideoRenderer localVideoRenderer =
-
         textureHelper=SurfaceTextureHelper.create(Thread.currentThread().getName(),rootEglBase.getEglBaseContext());
         videoCapturer.initialize(textureHelper,this,videoSource.getCapturerObserver());
 
@@ -357,13 +453,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         //videoCapturer.startCapture(1024,720,30);//capture in HD
-        //videoCapturer.startCapture(640,480,30);//capture in SD
-        videoCapturer.startCapture(320,240,30);//capture in LD
+        videoCapturer.startCapture(640,480,30);//capture in SD
+        //videoCapturer.startCapture(320,240,30);//capture in LD
 
         localVideoView.setVisibility(View.VISIBLE);
         localVideoTrack.addSink(localVideoView);
-        localVideoView.setMirror(true);
-        remoteVideoView.setMirror(true);
+        localVideoView.setMirror(false);
+        remoteVideoView.setMirror(false);
 
         //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
         //Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
@@ -378,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
         OkHttpClient webSocket = okHttpClientBuilder.build();
         wsListener = webSocket.newWebSocket(request, listener);
-        //isWebSocketConnected=true;
         webSocket.dispatcher().executorService().shutdown();
         Log.d("r22createLocalSocket->", "DONE");
     }
@@ -402,10 +497,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Use ECDSA encryption.
 
         rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
-        //rtcConfig.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN;
-
-
-
 
 
         localPeer = peerConnectionFactory.createPeerConnection(rtcConfig, new RdPeerConnectionObserver("localPeerCreation") {
@@ -430,25 +521,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
 
-//                super.onIceCandidate(iceCandidate);
-//                Map<String, String> iceCandidateParams = new HashMap<>();
-//                iceCandidateParams.put("sdpMid", iceCandidate.sdpMid);
-//                iceCandidateParams.put("sdpMLineIndex", Integer.toString(iceCandidate.sdpMLineIndex));
-//                iceCandidateParams.put("candidate", iceCandidate.sdp);
-//                if (webSocketAdapter.getUserId() != null) {
-//                    iceCandidateParams.put("endpointName", webSocketAdapter.getUserId());
-//                    webSocketAdapter.sendJson(webSocket, "onIceCandidate", iceCandidateParams);
-//                } else {
-//                    webSocketAdapter.addIceCandidate(iceCandidateParams);
-//                }
-
-
             }
 
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
-                //showToast("Received Remote stream");
+                //("Received Remote stream");
                 Log.d("createPeer22Connection->", "on AddStreamReceived Remote stream" );
                 super.onAddStream(mediaStream);
                 final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
@@ -468,27 +546,104 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 super.onIceGatheringChange(iceGatheringState);
 
             }
+
+            @Override
+            public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
+                super.onIceConnectionChange(iceConnectionState);
+                /* TODO fix multiple reconnecting
+                    reconnect when PeerConnection.IceConnectionState == DISCONNECTED or FAILED
+                * */
+//                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED || iceConnectionState == PeerConnection.IceConnectionState.FAILED){
+////                    //reconnect
+//
+//                    if (!isTryingReconnect){
+//                        isTryingReconnect=true;
+//                        tryToStart(5000);
+//                    }
+//
+//                }
+            }
         });
-        Log.d("createPeer22Connection->", "DONE");
+        Log.d("createPeer22Connection:", "DONE");
     }
 
 
 
     //@Override
 
-    public void onTryToStart() {
-        Log.d("onTryToStartr22", "localVideotrack=" + localVideoTrack.toString() );
-//        runOnUiThread(() -> {
-            if (localVideoTrack != null ) {
-                createPeerConnection();
-//                SignallingClient.getInstance().isStarted = true;
-                if (isInitiator) {
-                    doCall();
-                }
-            }
-//        });
-    }
+    public void tryToStart(Integer delay_ms) {
+        Log.d("TryToStartr22", "delay=" + delay_ms.toString());
 
+
+//        Handler handler = new Handler(Looper.getMainLooper()) {
+//
+//            @Override
+//            public void handleMessage(Message inputMessage) {
+//
+//                if (localVideoTrack != null) {
+//                    createPeerConnection();
+////                SignallingClient.getInstance().isStarted = true;
+//                    if (isInitiator) {
+//                        doCall();
+//                    }
+//                }
+//
+//
+//            }
+
+
+//        new CountDownTimer(delay_ms, 1000) {
+//
+//            public void onTick(long millisUntilFinished) {
+//                //mTextField.setText("seconds remaining: " + millisUntilFinished / 1000);
+//            }
+//
+//            public void onFinish() {
+//                runOnUiThread(() -> {
+//                    if (localVideoTrack != null ) {
+//                        createPeerConnection();
+////                SignallingClient.getInstance().isStarted = true;
+//                        if (isInitiator) {
+//                            doCall();
+//                        }
+//                    }
+//                });
+//            }
+//        }.start();
+
+
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+
+                // Block this thread for 2 seconds.
+                try {
+                    Thread.sleep(delay_ms);
+                } catch (InterruptedException e) {
+                }
+
+                // After sleep finished blocking, create a Runnable to run on the UI Thread.
+                runOnUiThread(() -> {
+                    if (localVideoTrack != null ) {
+                        createPeerConnection();
+                        if (isInitiator) {
+                            doCall();
+                        }
+
+                        isTryingReconnect=false;
+                    }
+                });
+
+            }
+
+        };
+
+// Don't forget to start the thread.
+        thread.start();
+
+
+    }
 
 
     /**
@@ -638,7 +793,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        showToast("Received Offer");
 //        runOnUiThread(() -> {
 //            if (!SignallingClient.getInstance().isInitiator && !SignallingClient.getInstance().isStarted) {
-//                onTryToStart();
+//                tryToStart();
 //            }
 //
 //            try {
@@ -726,8 +881,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (!isWebSocketConnected) {
                     createLocalSocket();
                     sendLogin(localUserLogin, localUserPassword, remoteUser);
+                } else {
+                    tryToStart(0);
                 }
-                onTryToStart();
+
                 break;
             }
         }
@@ -737,8 +894,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void hangup() {
         try {
-            localPeer.close();
-            localPeer = null;
+            if (localPeer != null) {
+                localPeer.close();
+                localPeer = null;
+            }
+
             wsListener.close(1000, null);
             //isWebSocketConnected=false;
             updateVideoViews(false);
@@ -777,7 +937,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             enumerator = new Camera1Enumerator(true);
         }
 
-        Logging.d(TAG, "Looking for front facing cameras.");
+        Logging.d(TAG, "Looking for back facing cameras.");
 
         String[] devicenames = enumerator.getDeviceNames();
 
