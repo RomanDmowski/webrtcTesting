@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -137,6 +138,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         //tryToStart(); call this from WebSocketListener
+
+
+        // https://developer.android.com/training/system-ui/navigation
+        View decorView = getWindow().getDecorView();
+        // Hide both the navigation bar and the status bar.
+        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+        // a general rule, you should design your app to hide the status bar whenever you
+        // hide the navigation bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN ;
+        decorView.setSystemUiVisibility(uiOptions);
+
 
     }
 
@@ -553,15 +566,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 /* TODO fix multiple reconnecting
                     reconnect when PeerConnection.IceConnectionState == DISCONNECTED or FAILED
                 * */
-//                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED || iceConnectionState == PeerConnection.IceConnectionState.FAILED){
-////                    //reconnect
-//
-//                    if (!isTryingReconnect){
-//                        isTryingReconnect=true;
-//                        tryToStart(5000);
-//                    }
-//
-//                }
+//                TODO reconnect after websocket failed
+//                TODO fix eror after RdWebSocketListener22: onMessage text : {"type":"leave"}
+                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED || iceConnectionState == PeerConnection.IceConnectionState.FAILED){
+//                    //reconnect
+
+                    if (!isTryingReconnect){
+                        isTryingReconnect=true;
+                        tryToStart(5000);
+                    }
+
+                }
             }
         });
         Log.d("createPeer22Connection:", "DONE");
@@ -725,127 +740,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
-    /**
-     * Received remote peer's media stream. we will get the first video track and render it
-     */
-//    private void gotRemoteStream(MediaStream stream) {
-//        //we have remote video stream. add to the renderer.
-//        final VideoTrack videoTrack = stream.videoTracks.get(0);
-//        runOnUiThread(() -> {
-//            try {
-//                remoteVideoView.setVisibility(View.VISIBLE);
-//                videoTrack.addSink(remoteVideoView);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//
-//    }
-
-
-    /**
-     * Received local ice candidate. Send it to remote peer through signalling for negotiation
-     */
-//    public void onIceCandidateReceived(IceCandidate iceCandidate) {
-//        //we have received ice candidate. We can set it to the other peer.
-////        SignallingClient.getInstance().emitIceCandidate(iceCandidate);
-//    }
-
-    /**
-     * SignallingCallback - called when the room is created - i.e. you are the initiator
-     */
-//    @Override
-//    public void onCreatedRoom() {
-//        showToast("You created the room " + gotUserMedia);
-//        if (gotUserMedia) {
-//            SignallingClient.getInstance().emitMessage("got user media");
-//        }
-//    }
-
-    /**
-     * SignallingCallback - called when you join the room - you are a participant
-     */
-//    @Override
-//    public void onJoinedRoom() {
-//        showToast("You joined the room " + gotUserMedia);
-//        if (gotUserMedia) {
-//            SignallingClient.getInstance().emitMessage("got user media");
-//        }
-//    }
-
-//    @Override
-//    public void onNewPeerJoined() {
-//        showToast("Remote Peer Joined");
-//    }
-//
-//    @Override
-//    public void onRemoteHangUp(String msg) {
-//        showToast("Remote Peer hungup");
-//        runOnUiThread(this::hangup);
-//    }
-//
-//    /**
-//     * SignallingCallback - Called when remote peer sends offer
-//     */
-//    @Override
-//    public void onOfferReceived(final JSONObject data) {
-//        showToast("Received Offer");
-//        runOnUiThread(() -> {
-//            if (!SignallingClient.getInstance().isInitiator && !SignallingClient.getInstance().isStarted) {
-//                tryToStart();
-//            }
-//
-//            try {
-//                localPeer.setRemoteDescription(new CustomSdpObserver("localSetRemote"), new SessionDescription(SessionDescription.Type.OFFER, data.getString("sdp")));
-//                doAnswer();
-//                updateVideoViews(true);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//    }
-
-//    private void doAnswer() {
-//        localPeer.createAnswer(new CustomSdpObserver("localCreateAns") {
-//            @Override
-//            public void onCreateSuccess(SessionDescription sessionDescription) {
-//                super.onCreateSuccess(sessionDescription);
-//                localPeer.setLocalDescription(new CustomSdpObserver("localSetLocal"), sessionDescription);
-//
-//                //send answer
-//            }
-//        }, new MediaConstraints());
-//    }
-
-    /**
-     * SignallingCallback - Called when remote peer sends answer to your offer
-     */
-
-//    @Override
-//    public void onAnswerReceived(JSONObject data) {
-//        showToast("Received Answer");
-//        try {
-//            localPeer.setRemoteDescription(new CustomSdpObserver("localSetRemote"), new SessionDescription(SessionDescription.Type.fromCanonicalForm(data.getString("type").toLowerCase()), data.getString("sdp")));
-//            updateVideoViews(true);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Remote IceCandidate received
-//     */
-//    @Override
-//    public void onIceCandidateReceived(JSONObject data) {
-//        try {
-//            localPeer.addIceCandidate(new IceCandidate(data.getString("id"), data.getInt("label"), data.getString("candidate")));
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//
     private void updateVideoViews(final boolean remoteVisible) {
         runOnUiThread(() -> {
             ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
@@ -923,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void showToast(final String msg) {
-        //runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
     }
 
     private VideoCapturer createCameraCapturer() {
