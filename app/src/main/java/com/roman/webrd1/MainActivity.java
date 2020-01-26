@@ -4,10 +4,6 @@ package com.roman.webrd1;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -59,12 +55,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //private String socketAddress = "http://192.168.0.111:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
-    private String localUserRole = "d";
-    private String remoteUser = "rd1_c";
-    private String localUserLogin = "rd1" + "_" + localUserRole;
-    private String localUserPassword = "pas4";
-
-
 
     private WebSocket wsListener;
 
@@ -108,6 +98,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+    private static final String APP_ROLE_DISPLAY = "d";
+    private static final String APP_ROLE_CAMERA = "c";
+
+
+    private String localAppRole = APP_ROLE_DISPLAY;
+    private String localUserName = "rd1";
+
+    private String localUserLogin = localUserName + "_" + localAppRole;
+    private String localUserPassword = "pas4";
+
+
+    private String remoteAppRole = "";
+    private String remoteUser = ""; //localUserName + "_" + remoteAppRole; //"rd1_c";
 
 
 
@@ -115,9 +118,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+//        setSupportActionBar(myToolbar);
+
+
         isInitiator = false;    //default value
         isWebSocketConnected=false;
         isTryingReconnect=false;
+
+        if (localAppRole==APP_ROLE_DISPLAY){
+            remoteAppRole=APP_ROLE_CAMERA;
+        } else {
+            remoteAppRole = APP_ROLE_DISPLAY;
+        }
+
+        remoteUser = localUserName + "_" + remoteAppRole;
+
 
         Logging.d(TAG, ON_CREATE);
 
