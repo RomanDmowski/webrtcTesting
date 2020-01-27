@@ -2,6 +2,7 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,7 +12,6 @@
 
 
     <LinearLayout
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,16 +31,14 @@
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/remote_gl_surface_view"
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:visibility="gone"
-            android:layout_height="0dp" />
+            android:layout_height="300dp" />
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/local_gl_surface_view"
             android:layout_width="match_parent"
-            android:layout_gravity="bottom|end"
+            android:layout_height="200dp" />
 
-            android:layout_height="match_parent" />
+<!--            android:layout_height="match_parent" -->
 
     </LinearLayout>
 

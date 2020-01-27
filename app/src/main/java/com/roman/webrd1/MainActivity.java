@@ -145,8 +145,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //getIceServers();
 
 
+        createFactories();
 
-        startCamera();
+        if (localAppRole==APP_ROLE_CAMERA){
+            startCamera();
+        }
+
 
         if (!isWebSocketConnected) {
             createLocalSocket();
@@ -232,8 +236,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initViews() {
         hangup = findViewById(R.id.end_call);
         startCall = findViewById(R.id.start_call);
-        localVideoView =  findViewById(R.id.local_gl_surface_view);
-        remoteVideoView = findViewById(R.id.remote_gl_surface_view);
+
+        if (localAppRole.equals(APP_ROLE_CAMERA)){
+            localVideoView =  findViewById(R.id.local_gl_surface_view);
+        } else {
+            remoteVideoView = findViewById(R.id.remote_gl_surface_view);
+        }
+
+
+
         hangup.setOnClickListener(this);
         startCall.setOnClickListener(this);
     }
@@ -241,10 +252,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initVideos() {
 
         rootEglBase = EglBase.create();
-        localVideoView.init(rootEglBase.getEglBaseContext(), null);
-        remoteVideoView.init(rootEglBase.getEglBaseContext(), null);
-        localVideoView.setZOrderMediaOverlay(true);
-        remoteVideoView.setZOrderMediaOverlay(true);
+
+        if(localAppRole.equals(APP_ROLE_CAMERA)){
+            localVideoView.init(rootEglBase.getEglBaseContext(), null);
+            localVideoView.setZOrderMediaOverlay(true);
+        }else {
+            remoteVideoView.init(rootEglBase.getEglBaseContext(), null);
+            remoteVideoView.setZOrderMediaOverlay(true);
+        }
+
+
+
     }
 
 
@@ -299,22 +317,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         createPeerConnection();
 
+        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
+        audioConstraints = new MediaConstraints();
+        videoConstraints = new MediaConstraints();
 
-        sdpConstraints.mandatory.add(
-                new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
-        sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                "offerToReceiveVideo", "true"));
+        //suggestion from GitHub
 
-        MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
-        stream.addTrack(localAudioTrack);
-        stream.addTrack(localVideoTrack);
-        localPeer.addStream(stream);
+        sdpConstraints = new MediaConstraints(); //was missing
+
+        if (localAppRole==APP_ROLE_CAMERA){
+            sdpConstraints.mandatory.add(
+                    new MediaConstraints.KeyValuePair("offerToReceiveAudio", "false"));
+            sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                    "offerToReceiveVideo", "false"));
+
+            MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
+            stream.addTrack(localAudioTrack);
+            stream.addTrack(localVideoTrack);
+            localPeer.addStream(stream);
+        } else {
+            sdpConstraints.mandatory.add(
+                    new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
+            sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                    "offerToReceiveVideo", "true"));
+        }
+
 
         SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER, json.getString("sdp"));
         Logging.d(TAG, "before SET REMOTE DESCRIPTION inside saveOfferAndAnswer");
         localPeer.setRemoteDescription(new CustomSdpObserver("r22localPeer.SetRemoteDesc"), sessionDescription);
         Logging.d(TAG, "SET REMOTE DESCRIPTION inside saveOfferAndAnswer");
-        updateVideoViews(true);
+
+        //updateVideoViews(true);
+        setVideoViews();
 
         localPeer.createAnswer(new CustomSdpObserver("r22 remoteCreateOffer") {
             @Override
@@ -351,7 +386,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //setRemoteDescription(sessionDescription);
         localPeer.setRemoteDescription(new CustomSdpObserver("r22localSetRemoteDesc"), sessionDescription);
         Logging.d(TAG, "SET REMOTE DESCRIPTION saveAnswer");
-        updateVideoViews(true);
+
+        setVideoViews();
+        //updateVideoViews(true);
+
+
         Logging.d(TAG, "Saving Answer ");
     }
 
@@ -424,22 +463,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 
 
-
-
-
-    private void startCamera() {
-
-
-
-
-
+    private void createFactories() {
         PeerConnectionFactory.InitializationOptions initializationOptions =
                 PeerConnectionFactory.InitializationOptions.builder(this)
                         .setEnableVideoHwAcceleration(true)
                         .createInitializationOptions();
         PeerConnectionFactory.initialize(initializationOptions);
 
-
+        //TODO check if we can remove it
         PeerConnectionFactory.Options options= new PeerConnectionFactory.Options();
 
         DefaultVideoEncoderFactory defaultVideoEncoderFactory = new DefaultVideoEncoderFactory(
@@ -452,17 +483,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setVideoEncoderFactory(defaultVideoEncoderFactory)
                 .setVideoDecoderFactory(defaultVideoDecoderFactory)
                 .createPeerConnectionFactory();
+    }
 
+
+
+    private void startCamera() {
 
         VideoCapturer videoCapturer=createCameraCapturer();
 
-        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
-        audioConstraints = new MediaConstraints();
-        videoConstraints = new MediaConstraints();
 
-        //suggestion from GitHub
-
-        sdpConstraints = new MediaConstraints(); //was missing
 
 
 
@@ -485,10 +514,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoCapturer.startCapture(640,480,30);//capture in SD
         //videoCapturer.startCapture(320,240,30);//capture in LD
 
-        localVideoView.setVisibility(View.VISIBLE);
-        localVideoTrack.addSink(localVideoView);
-        localVideoView.setMirror(false);
-        remoteVideoView.setMirror(false);
+//        localVideoView.setVisibility(View.VISIBLE);
+//        localVideoTrack.addSink(localVideoView);
+//        localVideoView.setMirror(false);
+//        remoteVideoView.setMirror(false);
 
         //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
         //Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
@@ -561,7 +590,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
                 runOnUiThread(() -> {
                     try {
-                        remoteVideoView.setVisibility(View.VISIBLE);
+                        //remoteVideoView.setVisibility(View.VISIBLE);
                         videoTrack.addSink(remoteVideoView);
 
                     } catch (Exception e) {
@@ -688,18 +717,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+        if (localAppRole==APP_ROLE_CAMERA){
+            sdpConstraints.mandatory.add(
+                    new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
+            sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                    "offerToReceiveVideo", "true"));
+            MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
+            stream.addTrack(localAudioTrack);
+            stream.addTrack(localVideoTrack);
+            localPeer.addStream(stream);
+        } else  {
+            sdpConstraints.mandatory.add(
+                    new MediaConstraints.KeyValuePair("offerToReceiveAudio", "false"));
+            sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
+                    "offerToReceiveVideo", "false"));
+        }
 
-        sdpConstraints.mandatory.add(
-                new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
-        sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
-                "offerToReceiveVideo", "true"));
 
 
-
-        MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
-        stream.addTrack(localAudioTrack);
-        stream.addTrack(localVideoTrack);
-        localPeer.addStream(stream);
 
         localPeer.createOffer(new CustomSdpObserver("r22localCreateOffer")
         {
@@ -754,9 +789,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    private void setVideoViews(){
+
+        if (localAppRole==APP_ROLE_CAMERA) {
+            localVideoView.setVisibility(View.VISIBLE);
+            localVideoTrack.addSink(localVideoView);
+            localVideoView.setMirror(false);
+        } else {
+            remoteVideoView.setVisibility((View.VISIBLE));
+//            remoteVideoView.setZOrderOnTop(true);   // !caused no video visible !
+            remoteVideoView.setMirror(false);
+        }
 
 
-    private void updateVideoViews(final boolean remoteVisible) {
+    }
+
+
+    private void OLD_updateVideoViews(final boolean remoteVisible) {
         runOnUiThread(() -> {
             ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
             if (remoteVisible) {
@@ -811,7 +860,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             wsListener.close(1000, null);
             //isWebSocketConnected=false;
-            updateVideoViews(false);
+            //updateVideoViews(false);
+            setVideoViews();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
