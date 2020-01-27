@@ -31,12 +31,18 @@
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/remote_gl_surface_view"
             android:layout_width="match_parent"
-            android:layout_height="300dp" />
+            android:layout_height="match_parent" />
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/local_gl_surface_view"
             android:layout_width="match_parent"
-            android:layout_height="200dp" />
+            android:layout_height="match_parent" />
+        <TextView
+            android:id="@+id/text_status"
+            android:layout_marginTop="200dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/status_waiting_for_camera"/>
 
 <!--            android:layout_height="match_parent" -->
 

@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -70,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SurfaceViewRenderer remoteVideoView;
     private SurfaceTextureHelper textureHelper;
 
+    private TextView statusTextView;
+
     private Button hangup;
     private Button startCall;
     private PeerConnection localPeer;
@@ -125,8 +128,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isInitiator = false;    //default value
         isWebSocketConnected=false;
         isTryingReconnect=false;
+        sdpConstraints = new MediaConstraints(); //was missing
 
-        if (localAppRole==APP_ROLE_DISPLAY){
+        if (localAppRole.equals(APP_ROLE_DISPLAY)){
             remoteAppRole=APP_ROLE_CAMERA;
         } else {
             remoteAppRole = APP_ROLE_DISPLAY;
@@ -237,12 +241,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hangup = findViewById(R.id.end_call);
         startCall = findViewById(R.id.start_call);
 
-        if (localAppRole.equals(APP_ROLE_CAMERA)){
+        //TODO clean the code
+//        if (localAppRole.equals(APP_ROLE_CAMERA)){
             localVideoView =  findViewById(R.id.local_gl_surface_view);
-        } else {
+//        } else {
             remoteVideoView = findViewById(R.id.remote_gl_surface_view);
-        }
+//        }
 
+        statusTextView = findViewById(R.id.text_status);
 
 
         hangup.setOnClickListener(this);
@@ -255,10 +261,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if(localAppRole.equals(APP_ROLE_CAMERA)){
             localVideoView.init(rootEglBase.getEglBaseContext(), null);
-            localVideoView.setZOrderMediaOverlay(true);
+            //localVideoView.setZOrderMediaOverlay(true);
         }else {
             remoteVideoView.init(rootEglBase.getEglBaseContext(), null);
-            remoteVideoView.setZOrderMediaOverlay(true);
+            //remoteVideoView.setZOrderMediaOverlay(true);
         }
 
 
@@ -317,13 +323,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         createPeerConnection();
 
-        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
-        audioConstraints = new MediaConstraints();
-        videoConstraints = new MediaConstraints();
+
 
         //suggestion from GitHub
 
-        sdpConstraints = new MediaConstraints(); //was missing
+
 
         if (localAppRole==APP_ROLE_CAMERA){
             sdpConstraints.mandatory.add(
@@ -489,13 +493,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startCamera() {
 
+        //Create MediaConstraints - Will be useful for specifying video and audio constraints.
+        audioConstraints = new MediaConstraints();
+        videoConstraints = new MediaConstraints();
         VideoCapturer videoCapturer=createCameraCapturer();
-
-
-
-
-
-
         //VideoSource videoSource=peerConnectionFactory.createVideoSource(false);
         VideoSource videoSource=peerConnectionFactory.createVideoSource(videoCapturer);
         localVideoTrack=peerConnectionFactory.createVideoTrack("100",videoSource);
@@ -506,9 +507,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         textureHelper=SurfaceTextureHelper.create(Thread.currentThread().getName(),rootEglBase.getEglBaseContext());
         videoCapturer.initialize(textureHelper,this,videoSource.getCapturerObserver());
-
-
-
 
         //videoCapturer.startCapture(1024,720,30);//capture in HD
         videoCapturer.startCapture(640,480,30);//capture in SD
@@ -791,17 +789,84 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setVideoViews(){
 
-        if (localAppRole==APP_ROLE_CAMERA) {
-            localVideoView.setVisibility(View.VISIBLE);
-            localVideoTrack.addSink(localVideoView);
-            localVideoView.setMirror(false);
-        } else {
-            remoteVideoView.setVisibility((View.VISIBLE));
-//            remoteVideoView.setZOrderOnTop(true);   // !caused no video visible !
-            remoteVideoView.setMirror(false);
-        }
+        runOnUiThread(() -> {
+            if (localAppRole.equals(APP_ROLE_CAMERA)) {
+                    visibleLocalVideoView(true);
+                    visibleRemoteVideoView(false);
+                    visibleStatusTextView(false);
+                    localVideoTrack.addSink(localVideoView);
+                    localVideoView.setMirror(false);
+            } else {
+                    visibleLocalVideoView(false);
+                    visibleRemoteVideoView(true);
+                    visibleStatusTextView(false);
+                    remoteVideoView.setMirror(false);
+            }
+        });
 
 
+
+
+
+//        runOnUiThread(() -> {
+//            if (localAppRole.equals(APP_ROLE_CAMERA)) {
+//                remoteVideoView.setVisibility((View.INVISIBLE));
+//                statusTextView.setVisibility(View.INVISIBLE);
+//                localVideoView.setVisibility(View.VISIBLE);
+//                localVideoTrack.addSink(localVideoView);
+//                localVideoView.setMirror(false);
+//            } else {
+//                localVideoView.setVisibility(View.INVISIBLE);
+//                statusTextView.setVisibility(View.VISIBLE);
+//                remoteVideoView.setVisibility((View.INVISIBLE));
+////            remoteVideoView.setZOrderOnTop(true);   // !caused no video visible !
+//                remoteVideoView.setMirror(false);
+//            }
+//        });
+
+    }
+
+    private void visibleRemoteVideoView(final boolean viewVisible) {
+        runOnUiThread(() -> {
+            ViewGroup.LayoutParams params = remoteVideoView.getLayoutParams();
+            if (viewVisible) {
+                params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+            } else {
+                params.height = 0;
+            }
+            remoteVideoView.setLayoutParams(params);
+        });
+    }
+
+
+
+
+    private void visibleLocalVideoView(final boolean viewVisible) {
+        runOnUiThread(() -> {
+            ViewGroup.LayoutParams params = localVideoView.getLayoutParams();
+            if (viewVisible) {
+                params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+            } else {
+                params.height = 0;
+            }
+            localVideoView.setLayoutParams(params);
+        });
+    }
+
+
+    private void visibleStatusTextView(final boolean viewVisible) {
+        runOnUiThread(() -> {
+            ViewGroup.LayoutParams params = statusTextView.getLayoutParams();
+            if (viewVisible) {
+                params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+            } else {
+                params.height = 0;
+            }
+            statusTextView.setLayoutParams(params);
+        });
     }
 
 
