@@ -53,7 +53,7 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String socketAddress = "http://10.0.2.2:9090";
-    //private String socketAddress = "http://192.168.0.111:9090";
+//    private String socketAddress = "http://192.168.0.112:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
 
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 | View.SYSTEM_UI_FLAG_FULLSCREEN ;
         decorView.setSystemUiVisibility(uiOptions);
 
-
+        setVideoViews();
     }
 
     @Override
@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onStop() {
+
         super.onStop();
 
         Logging.d(TAG,ON_STOP);
@@ -215,11 +216,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        Logging.d(TAG,ON_DESTROY);
         hangup();
         super.onDestroy();
+        Logging.d(TAG,ON_DESTROY);
+
 
     }
+
 
 
 
@@ -301,18 +304,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //#############################################################################################################
 
 
-
-
-
-
-
-
-//    private void setRemoteDescription(SessionDescription sessionDescription) {
-//
-//        localPeer.setRemoteDescription(new CustomSdpObserver("r22localPeerSetRemoteDesc"), sessionDescription);
-//        //updateVideoViews(true);
-//
-//    }
 
 
 
@@ -436,35 +427,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //##############################################################################################################
-
-
-
-//    private void getIceServers() {
-//
-//
-//        PeerConnection.IceServer iceServer = PeerConnection.IceServer.builder("stun:u1.xirsys.com")
-//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-//                .createIceServer();
-//
-//        peerIceServers.add(iceServer);
-//        //rd
-//
-//        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=udp")
-//                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
-//                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
-//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-//                .createIceServer();
-//        peerIceServers.add(iceServer);
-//
-//        iceServer = PeerConnection.IceServer.builder("turn:u1.xirsys.com:80?transport=tcp")
-//                .setUsername("6F9otw7OYvpJ49xRRNXXrLbZlmfdFnsEqEpFtmMpi-WtAF4XMzRD687O4xsAGHDVAAAAAF18GL9yb21hbmRtbw==")
-//                .setPassword("39839660-d676-11e9-8c3e-f676af1e4042")
-//                //.setTlsCertPolicy(PeerConnection.TlsCertPolicy.TLS_CERT_POLICY_INSECURE_NO_CHECK)
-//                .createIceServer();
-//        peerIceServers.add(iceServer);
-//
-//    }
 
 
     private void createFactories() {
@@ -551,7 +513,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
         rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
         // Use ECDSA encryption.
-
         rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
 
 
@@ -610,7 +571,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     reconnect when PeerConnection.IceConnectionState == DISCONNECTED or FAILED
                 * */
 //                TODO reconnect after websocket failed
-//                TODO fix eror after RdWebSocketListener22: onMessage text : {"type":"leave"}
+//                TODO fix error after RdWebSocketListener22: onMessage text : {"type":"leave"}
+//                TODO in display mode there is no reconnection after change the orientation of a phone
+
                 if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED || iceConnectionState == PeerConnection.IceConnectionState.FAILED){
 //                    //reconnect
 
@@ -683,14 +646,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 // After sleep finished blocking, create a Runnable to run on the UI Thread.
                 runOnUiThread(() -> {
-                    if (localVideoTrack != null ) {
+//                    if (localVideoTrack != null) {
                         createPeerConnection();
                         if (isInitiator) {
                             doCall();
                         }
 
                         isTryingReconnect=false;
-                    }
+//                    }
                 });
 
             }
@@ -729,6 +692,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new MediaConstraints.KeyValuePair("offerToReceiveAudio", "false"));
             sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                     "offerToReceiveVideo", "false"));
+            MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
+
+            localPeer.addStream(stream);
         }
 
 
@@ -760,6 +726,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             json.put("name", myName);
             json.put("password",myPassword);
             json.put("otherUser",otherUser);
+            wsListener.send(json.toString());
+
+        } catch (Throwable e) {
+            Log.e("SendLogin", "Uncaught exception is: ", e);
+        }
+    }
+
+    public void sendLeave() {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("type", "leave");
+            json.put("name", localUserLogin);
             wsListener.send(json.toString());
 
         } catch (Throwable e) {
@@ -893,6 +871,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.end_call: {
+                sendLeave();
                 hangup();
                 break;
             }
@@ -934,11 +913,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-//    @Override
-//    protected void onDestroy() {
-////        SignallingClient.getInstance().close();
-//        super.onDestroy();
-//    }
 
     /**
      * Util Methods

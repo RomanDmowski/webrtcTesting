@@ -34,6 +34,7 @@ class RdWebSocketListener extends WebSocketListener {
     @Override
     public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         super.onClosing(webSocket, code, reason);
+        mainActivity.sendLeave();
         Logging.d(TAG, "Closing : " + code + " / " + reason);
     }
 
