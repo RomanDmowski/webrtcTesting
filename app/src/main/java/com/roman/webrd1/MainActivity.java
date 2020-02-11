@@ -53,7 +53,7 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String socketAddress = "http://10.0.2.2:9090";
-//    private String socketAddress = "http://192.168.0.112:9090";
+    //private String socketAddress = "http://192.168.0.112:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
 
@@ -101,11 +101,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    private static final String APP_ROLE_DISPLAY = "d";
-    private static final String APP_ROLE_CAMERA = "c";
+    public static final String APP_ROLE_DISPLAY = "d";
+    public static final String APP_ROLE_CAMERA = "c";
 
 
-    private String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String remoteAppRole = "";
     private String remoteUser = ""; //localUserName + "_" + remoteAppRole; //"rd1_c";
 
-
+// TODO reconnect after web socket failed, this also helps to initialize 'monitor' after 'camera'
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -648,7 +648,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 runOnUiThread(() -> {
 //                    if (localVideoTrack != null) {
                         createPeerConnection();
-                        if (isInitiator) {
+                        // TODO check if we can remove 'isInitiator' variable
+                        //if (isInitiator) {
+                        if (localAppRole.equals(APP_ROLE_CAMERA)) {
                             doCall();
                         }
 

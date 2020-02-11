@@ -11,6 +11,8 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
+import static com.roman.webrd1.MainActivity.APP_ROLE_CAMERA;
+
 class RdWebSocketListener extends WebSocketListener {
 
     private static final String TAG = "RdWebSocketListener22";
@@ -48,12 +50,68 @@ class RdWebSocketListener extends WebSocketListener {
     public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
         super.onMessage(webSocket, text);
         Logging.d(TAG, "onMessage text : " + text);
+//        try {
+//
+//            String typeOfMessage = new JSONObject(text).getString("type");
+//            if (typeOfMessage.equalsIgnoreCase("login"))
+//
+//            {
+//                String jsonString = new JSONObject(text).getString("success");
+//                if(jsonString.equalsIgnoreCase("false")) {
+//                    Logging.d(TAG, "Login failed");
+//                } else {
+//                    jsonString = new JSONObject(text).getString("ice");
+//                    //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
+//                    mainActivity.addIceServers(jsonString);
+//
+//                    //mainActivity.isInitiator=true;
+//                    mainActivity.tryToStart(500);
+//
+////                    jsonString = new JSONObject(text).getString("action");
+////                    Logging.d(TAG, "nextAction:" + jsonString);
+////                    if(jsonString.equalsIgnoreCase("startCall")){
+////                        Logging.d(TAG, "isInitiator: true");
+////                        mainActivity.isInitiator=true;
+////                        mainActivity.tryToStart(500);
+////                    }
+//                }
+//
+//            }
+//            else {
+//
+//
+//                JSONObject json = new JSONObject(new JSONObject(text).getString(typeOfMessage));
+//                if (typeOfMessage.equals("candidate")) {
+//                    //received ICE candidates from a remote peer
+//                    mainActivity.saveIceCandidate(json);
+//                } else {
+//                    if (typeOfMessage.equals("offer")) {
+//                        Logging.d(TAG, "Save Offer and Answer text : " + text);
+//                        mainActivity.saveOfferAndAnswer(json);
+//                        //saveOfferAndAnswer(json);
+//
+//
+//                    } else if (typeOfMessage.equals("answer")) {
+//                        mainActivity.saveAnswer(json);
+//                    } else {
+//                        Logging.d(TAG, "Else : " + text);
+//                    }
+//                }
+//                }
+//            } catch(JSONException e){
+//                e.printStackTrace();
+//            }
+
+
+
+
+
+
+
+
         try {
 
             String typeOfMessage = new JSONObject(text).getString("type");
-
-
-
             if (typeOfMessage.equalsIgnoreCase("login"))
 
             {
@@ -65,14 +123,6 @@ class RdWebSocketListener extends WebSocketListener {
                     //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
                     mainActivity.addIceServers(jsonString);
 
-
-                    jsonString = new JSONObject(text).getString("action");
-                    Logging.d(TAG, "nextAction:" + jsonString);
-                    if(jsonString.equalsIgnoreCase("startCall")){
-                        Logging.d(TAG, "isInitiator: true");
-                        mainActivity.isInitiator=true;
-                        mainActivity.tryToStart(500);
-                    }
                 }
 
             }
@@ -83,23 +133,42 @@ class RdWebSocketListener extends WebSocketListener {
                 if (typeOfMessage.equals("candidate")) {
                     //received ICE candidates from a remote peer
                     mainActivity.saveIceCandidate(json);
-                } else {
-                    if (typeOfMessage.equals("offer")) {
-                        Logging.d(TAG, "Save Offer and Answer text : " + text);
-                        mainActivity.saveOfferAndAnswer(json);
-                        //saveOfferAndAnswer(json);
+                }
+                else if (typeOfMessage.equals("offer")) {
+                    Logging.d(TAG, "Save Offer and Answer text : " + text);
+                    mainActivity.saveOfferAndAnswer(json);
+                    //saveOfferAndAnswer(json);
+                }
 
-
-                    } else if (typeOfMessage.equals("answer")) {
+                else if (typeOfMessage.equals("answer")) {
                         mainActivity.saveAnswer(json);
+                }
+
+                else if (typeOfMessage.equals("action")) {
+
+                    String jsonString = new JSONObject(text).getString("action");
+                    if(jsonString.equalsIgnoreCase("startCall")) {
+                        Logging.d(TAG, "Action: startCall");
+//                        mainActivity.isInitiator=true;
+                        if (mainActivity.localAppRole.equals(APP_ROLE_CAMERA)) {
+                            mainActivity.tryToStart(500);
+                        }
+
+
                     } else {
+                        Logging.d(TAG, "Action: wait");
+                    }
+                }
+                else {
                         Logging.d(TAG, "Else : " + text);
                     }
                 }
-                }
-            } catch(JSONException e){
-                e.printStackTrace();
             }
+         catch(JSONException e){
+            e.printStackTrace();
+        }
+
+
 
     }
 
