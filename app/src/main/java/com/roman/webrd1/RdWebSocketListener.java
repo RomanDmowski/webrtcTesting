@@ -112,9 +112,7 @@ class RdWebSocketListener extends WebSocketListener {
         try {
 
             String typeOfMessage = new JSONObject(text).getString("type");
-            if (typeOfMessage.equalsIgnoreCase("login"))
-
-            {
+            if (typeOfMessage.equalsIgnoreCase("login")) {
                 String jsonString = new JSONObject(text).getString("success");
                 if(jsonString.equalsIgnoreCase("false")) {
                     Logging.d(TAG, "Login failed");
@@ -122,13 +120,24 @@ class RdWebSocketListener extends WebSocketListener {
                     jsonString = new JSONObject(text).getString("ice");
                     //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
                     mainActivity.addIceServers(jsonString);
-
                 }
 
             }
+
+            else if (typeOfMessage.equals("action")) {
+
+                String jsonString = new JSONObject(text).getString("action");
+                if(jsonString.equalsIgnoreCase("startCall")) {
+                    Logging.d(TAG, "Action: startCall");
+                    //mainActivity.isInitiator=true;
+                    if (mainActivity.localAppRole.equals(APP_ROLE_CAMERA)) {
+                        mainActivity.tryToStart(500);
+                    }
+                } else {
+                    Logging.d(TAG, "Action: wait");
+                }
+            }
             else {
-
-
                 JSONObject json = new JSONObject(new JSONObject(text).getString(typeOfMessage));
                 if (typeOfMessage.equals("candidate")) {
                     //received ICE candidates from a remote peer
@@ -144,21 +153,7 @@ class RdWebSocketListener extends WebSocketListener {
                         mainActivity.saveAnswer(json);
                 }
 
-                else if (typeOfMessage.equals("action")) {
 
-                    String jsonString = new JSONObject(text).getString("action");
-                    if(jsonString.equalsIgnoreCase("startCall")) {
-                        Logging.d(TAG, "Action: startCall");
-//                        mainActivity.isInitiator=true;
-                        if (mainActivity.localAppRole.equals(APP_ROLE_CAMERA)) {
-                            mainActivity.tryToStart(500);
-                        }
-
-
-                    } else {
-                        Logging.d(TAG, "Action: wait");
-                    }
-                }
                 else {
                         Logging.d(TAG, "Else : " + text);
                     }

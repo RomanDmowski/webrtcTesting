@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -579,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!isTryingReconnect){
                         isTryingReconnect=true;
-                        tryToStart(5000);
+                        tryToStart(1000);
                     }
 
                 }
