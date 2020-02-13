@@ -137,6 +137,13 @@ class RdWebSocketListener extends WebSocketListener {
                     Logging.d(TAG, "Action: wait");
                 }
             }
+
+            else if (typeOfMessage.equals("leave")){
+//                mainActivity.sendLeave();
+//                mainActivity.hangup();
+//                mainActivity.tryToStart(1000);
+                Logging.d(TAG, "Message: leave");
+            }
             else {
                 JSONObject json = new JSONObject(new JSONObject(text).getString(typeOfMessage));
                 if (typeOfMessage.equals("candidate")) {

@@ -53,6 +53,7 @@ import okhttp3.WebSocket;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String socketAddress = "http://10.0.2.2:9090";
+
     //private String socketAddress = "http://192.168.0.112:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String remoteAppRole = "";
     private String remoteUser = ""; //localUserName + "_" + remoteAppRole; //"rd1_c";
+
 
 // TODO reconnect after web socket failed, this also helps to initialize 'monitor' after 'camera'
 
@@ -471,7 +473,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoCapturer.initialize(textureHelper,this,videoSource.getCapturerObserver());
 
         //videoCapturer.startCapture(1024,720,30);//capture in HD
-        videoCapturer.startCapture(640,480,30);//capture in SD
+        videoCapturer.startCapture(640,480,15);//capture in SD
         //videoCapturer.startCapture(320,240,30);//capture in LD
 
 //        localVideoView.setVisibility(View.VISIBLE);
@@ -507,11 +509,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TCP candidates are only useful when connecting to a server that supports
         // ICE-TCP.
         rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
-        //rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
-        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXCOMPAT;
-        //rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
-        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
-        rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
+        rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
+        //rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXCOMPAT;
+        rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
+        //rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.NEGOTIATE;
+        //rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
+        rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE;
+
+
         // Use ECDSA encryption.
         rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
 
@@ -551,6 +556,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         //remoteVideoView.setVisibility(View.VISIBLE);
                         videoTrack.addSink(remoteVideoView);
+                        setVideoViews();
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -574,15 +580,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                TODO fix error after RdWebSocketListener22: onMessage text : {"type":"leave"}
 //                TODO in display mode there is no reconnection after change the orientation of a phone
 
-                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED || iceConnectionState == PeerConnection.IceConnectionState.FAILED){
-//                    //reconnect
-
-                    if (!isTryingReconnect){
-                        isTryingReconnect=true;
-                        tryToStart(1000);
-                    }
-
-                }
+                //iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED ||
+//                if (iceConnectionState == PeerConnection.IceConnectionState.FAILED){
+////                    //reconnect
+//
+//                    visibleLocalVideoView(false);
+//                    visibleRemoteVideoView(false);
+//                    visibleStatusTextView(true);
+//
+//                    if (!isTryingReconnect && localAppRole.equals(APP_ROLE_CAMERA)){
+//                        isTryingReconnect=true;
+//                        tryToStart(1000);
+//                    }
+//
+//                }
             }
         });
         Log.d("createPeer22Connection:", "DONE");
@@ -594,6 +605,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void tryToStart(Integer delay_ms) {
         Log.d("TryToStartr22", "delay=" + delay_ms.toString());
+        showToast("Connecting...");
 
 
 //        Handler handler = new Handler(Looper.getMainLooper()) {
@@ -897,7 +909,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    private void hangup() {
+    public void hangup() {
         try {
             if (localPeer != null) {
                 localPeer.close();
