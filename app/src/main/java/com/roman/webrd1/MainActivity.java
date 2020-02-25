@@ -158,11 +158,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             localVideoTrack.addSink(localVideoView);
         }
 
-
-        if (!isWebSocketConnected) {
-            createLocalSocket();
-            sendLogin(localUserLogin, localUserPassword, remoteUser);
-        }
+        logToServer();
+//        if (!isWebSocketConnected) {
+//            createLocalSocket();
+//            sendLogin(localUserLogin, localUserPassword, remoteUser);
+//        }
 
         //tryToStart(); call this from WebSocketListener
 
@@ -240,7 +240,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
+    public void logToServer(){
+        if (!isWebSocketConnected) {
+            createLocalSocket();
+        }
+        sendLogin(localUserLogin, localUserPassword, remoteUser);
+    }
 
 
 
