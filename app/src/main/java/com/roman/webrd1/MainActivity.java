@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String socketAddress = "http://10.0.2.2:9090";
 
-    //private String socketAddress = "http://192.168.0.112:9090";
+    //private String socketAddress = "http://192.168.0.101:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
 
@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (localAppRole==APP_ROLE_CAMERA){
             startCamera();
+            localVideoTrack.addSink(localVideoView);
         }
 
 
@@ -176,7 +177,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 | View.SYSTEM_UI_FLAG_FULLSCREEN ;
         decorView.setSystemUiVisibility(uiOptions);
 
-        setVideoViews();
+        //setVideoViews();
+
+
+        if (localAppRole.equals(APP_ROLE_CAMERA)){
+            showLocalVideo();
+
+
+        }
+        else {
+            showStatusTextView();
+        }
+
+
     }
 
     @Override
@@ -332,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stream.addTrack(localAudioTrack);
             stream.addTrack(localVideoTrack);
             localPeer.addStream(stream);
+
         } else {
             sdpConstraints.mandatory.add(
                     new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
@@ -346,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Logging.d(TAG, "SET REMOTE DESCRIPTION inside saveOfferAndAnswer");
 
         //updateVideoViews(true);
-        setVideoViews();
+        //setVideoViews();
 
         localPeer.createAnswer(new CustomSdpObserver("r22 remoteCreateOffer") {
             @Override
@@ -384,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         localPeer.setRemoteDescription(new CustomSdpObserver("r22localSetRemoteDesc"), sessionDescription);
         Logging.d(TAG, "SET REMOTE DESCRIPTION saveAnswer");
 
-        setVideoViews();
+        //setVideoViews();
         //updateVideoViews(true);
 
 
@@ -556,7 +570,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         //remoteVideoView.setVisibility(View.VISIBLE);
                         videoTrack.addSink(remoteVideoView);
-                        setVideoViews();
+                        //setVideoViews();
+                        showRemoteVideo();
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -581,19 +596,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                TODO in display mode there is no reconnection after change the orientation of a phone
 
                 //iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED ||
-//                if (iceConnectionState == PeerConnection.IceConnectionState.FAILED){
-////                    //reconnect
-//
-//                    visibleLocalVideoView(false);
-//                    visibleRemoteVideoView(false);
-//                    visibleStatusTextView(true);
-//
-//                    if (!isTryingReconnect && localAppRole.equals(APP_ROLE_CAMERA)){
-//                        isTryingReconnect=true;
-//                        tryToStart(1000);
-//                    }
-//
-//                }
+                if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED){
+                    showStatusTextView();
+                }
+
+                if (iceConnectionState == PeerConnection.IceConnectionState.CONNECTED){
+                    if (localAppRole==APP_ROLE_CAMERA){
+                        showLocalVideo();
+                    }
+                    else {
+                        showRemoteVideo();
+                    }
+                }
+
+                if (iceConnectionState == PeerConnection.IceConnectionState.FAILED){
+//                        hangup();
+//                        createLocalSocket();
+//                        sendLogin(localUserLogin, localUserPassword, remoteUser);
+                }
             }
         });
         Log.d("createPeer22Connection:", "DONE");
@@ -656,6 +676,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } catch (InterruptedException e) {
                 }
 
+
                 // After sleep finished blocking, create a Runnable to run on the UI Thread.
                 runOnUiThread(() -> {
 //                    if (localVideoTrack != null) {
@@ -665,7 +686,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (localAppRole.equals(APP_ROLE_CAMERA)) {
                             doCall();
                         }
-
                         isTryingReconnect=false;
 //                    }
                 });
@@ -701,13 +721,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stream.addTrack(localAudioTrack);
             stream.addTrack(localVideoTrack);
             localPeer.addStream(stream);
+
         } else  {
             sdpConstraints.mandatory.add(
                     new MediaConstraints.KeyValuePair("offerToReceiveAudio", "false"));
             sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
                     "offerToReceiveVideo", "false"));
             MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
-
             localPeer.addStream(stream);
         }
 
@@ -778,23 +798,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void showLocalVideo(){
 
-    private void setVideoViews(){
+        visibleLocalVideoView(true);
+        visibleRemoteVideoView(false);
+        visibleStatusTextView(false);
 
-        runOnUiThread(() -> {
-            if (localAppRole.equals(APP_ROLE_CAMERA)) {
-                    visibleLocalVideoView(true);
-                    visibleRemoteVideoView(false);
-                    visibleStatusTextView(false);
-                    localVideoTrack.addSink(localVideoView);
-                    localVideoView.setMirror(false);
-            } else {
-                    visibleLocalVideoView(false);
-                    visibleRemoteVideoView(true);
-                    visibleStatusTextView(false);
-                    remoteVideoView.setMirror(false);
-            }
-        });
+        localVideoView.setMirror(false);
+    }
+
+    private void showRemoteVideo(){
+        visibleLocalVideoView(false);
+        visibleRemoteVideoView(true);
+        visibleStatusTextView(false);
+        remoteVideoView.setMirror(false);
+    }
+
+
+    private void showStatusTextView(){
+        visibleLocalVideoView(false);
+        visibleRemoteVideoView(false);
+        visibleStatusTextView(true);
+    }
+
+//    private void setVideoViews(){
+//
+//        runOnUiThread(() -> {
+//            if (localAppRole.equals(APP_ROLE_CAMERA)) {
+//                    visibleLocalVideoView(true);
+//                    visibleRemoteVideoView(false);
+//                    visibleStatusTextView(false);
+//                    localVideoTrack.addSink(localVideoView);
+//                    localVideoView.setMirror(false);
+//            } else {
+//                    visibleLocalVideoView(false);
+//                    visibleRemoteVideoView(true);
+//                    visibleStatusTextView(false);
+//                    remoteVideoView.setMirror(false);
+//            }
+//        });
 
 
 
@@ -816,7 +858,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 //        });
 
-    }
+//    }
 
     private void visibleRemoteVideoView(final boolean viewVisible) {
         runOnUiThread(() -> {
@@ -829,6 +871,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             remoteVideoView.setLayoutParams(params);
         });
+        Log.d("Mainr22", "VisibleRemoteVideoView=" + viewVisible );
     }
 
 
@@ -845,6 +888,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             localVideoView.setLayoutParams(params);
         });
+        Log.d("Mainr22", "VisibleLocalVideoView=" + viewVisible );
     }
 
 
@@ -859,6 +903,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             statusTextView.setLayoutParams(params);
         });
+        Log.d("Mainr22", "VisibleTextView=" + viewVisible );
     }
 
 
@@ -885,7 +930,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.end_call: {
-                sendLeave();
+                //sendLeave();
                 hangup();
                 break;
             }
@@ -915,11 +960,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 localPeer.close();
                 localPeer = null;
             }
-
+            sendLeave();
             wsListener.close(1000, null);
             //isWebSocketConnected=false;
             //updateVideoViews(false);
-            setVideoViews();
+            //setVideoViews();
+            showStatusTextView();
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
