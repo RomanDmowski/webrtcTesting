@@ -52,9 +52,9 @@ import okhttp3.WebSocket;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private String socketAddress = "http://10.0.2.2:9090";
+    //private String socketAddress = "http://10.0.2.2:9090";
 
-    //private String socketAddress = "http://192.168.0.101:9090";
+    private String socketAddress = "http://192.168.0.101:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
 
@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean isInitiator;
     public boolean isWebSocketConnected;
     public boolean isTryingReconnect;
+    public boolean isTryingReconnectWebSocket;
     private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
     private static final String TAG = "MainActivityr22";
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isInitiator = false;    //default value
         isWebSocketConnected=false;
         isTryingReconnect=false;
+        isTryingReconnectWebSocket=false;
         sdpConstraints = new MediaConstraints(); //was missing
 
         if (localAppRole.equals(APP_ROLE_DISPLAY)){
@@ -158,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             localVideoTrack.addSink(localVideoView);
         }
 
-        logToServer();
+
 //        if (!isWebSocketConnected) {
 //            createLocalSocket();
 //            sendLogin(localUserLogin, localUserPassword, remoteUser);
@@ -182,12 +184,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (localAppRole.equals(APP_ROLE_CAMERA)){
             showLocalVideo();
-
-
         }
         else {
             showStatusTextView();
         }
+        logToServer();
 
 
     }
@@ -241,11 +242,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     public void logToServer(){
-        if (!isWebSocketConnected) {
-            createLocalSocket();
-        }
-        sendLogin(localUserLogin, localUserPassword, remoteUser);
+
+
+        //check if we have a connection
+
+
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                while (!isWebSocketConnected) {
+                    // Block this thread for 2 seconds.
+                    isTryingReconnectWebSocket=true;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
+                    createLocalSocket();
+                }
+                isTryingReconnectWebSocket=false;
+                sendLogin(localUserLogin, localUserPassword, remoteUser);
+
+            }
+
+        };
+
+        // start the thread.
+        thread.start();
     }
+
+
 
 
 

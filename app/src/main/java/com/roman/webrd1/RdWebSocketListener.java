@@ -45,6 +45,10 @@ class RdWebSocketListener extends WebSocketListener {
         super.onFailure(webSocket, t, response);
         Logging.d(TAG, "Error onFailure : " + t.getMessage());
         mainActivity.isWebSocketConnected=false;
+        if (!mainActivity.isTryingReconnectWebSocket) {
+            mainActivity.logToServer();
+        }
+
     }
 
     @Override
