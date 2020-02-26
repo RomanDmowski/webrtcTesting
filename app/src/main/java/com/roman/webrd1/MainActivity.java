@@ -4,6 +4,7 @@ package com.roman.webrd1;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -50,11 +51,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+//public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
+    private String socketAddress = "http://10.0.2.2:9090";
 
-    //private String socketAddress = "http://10.0.2.2:9090";
-
-    private String socketAddress = "http://192.168.0.101:9090";
+    //private String socketAddress = "http://192.168.0.104:9090";
     //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
 
 
@@ -74,8 +75,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView statusTextView;
 
-    private Button hangup;
-    private Button startCall;
+//    private Button hangup;
+//    private Button startCall;
+    private FloatingActionButton watchIndicator;
     private PeerConnection localPeer;
     private EglBase rootEglBase;
 
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -181,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //setVideoViews();
 
-
+        visibleWatchIndicator(false);
         if (localAppRole.equals(APP_ROLE_CAMERA)){
             showLocalVideo();
         }
@@ -287,8 +289,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void initViews() {
-        hangup = findViewById(R.id.end_call);
-        startCall = findViewById(R.id.start_call);
+//        hangup = findViewById(R.id.end_call);
+//        startCall = findViewById(R.id.start_call);
+
+       watchIndicator = findViewById(R.id.watching_indicator);
+
 
         //TODO clean the code
 //        if (localAppRole.equals(APP_ROLE_CAMERA)){
@@ -300,8 +305,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         statusTextView = findViewById(R.id.text_status);
 
 
-        hangup.setOnClickListener(this);
-        startCall.setOnClickListener(this);
+//        hangup.setOnClickListener(this);
+//        startCall.setOnClickListener(this);
     }
 
     private void initVideos() {
@@ -521,10 +526,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoCapturer.startCapture(640,480,15);//capture in SD
         //videoCapturer.startCapture(320,240,30);//capture in LD
 
-//        localVideoView.setVisibility(View.VISIBLE);
-//        localVideoTrack.addSink(localVideoView);
-//        localVideoView.setMirror(false);
-//        remoteVideoView.setMirror(false);
 
         //Logging.enableTracing("logcat:", EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT));
         //Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
@@ -596,18 +597,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //("Received Remote stream");
                 Log.d("createPeer22Connection->", "on AddStreamReceived Remote stream" );
                 super.onAddStream(mediaStream);
-                final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
-                runOnUiThread(() -> {
-                    try {
-                        //remoteVideoView.setVisibility(View.VISIBLE);
-                        videoTrack.addSink(remoteVideoView);
-                        //setVideoViews();
-                        showRemoteVideo();
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+                if (localAppRole==APP_ROLE_DISPLAY){
+                    final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
+                    runOnUiThread(() -> {
+                        try {
+                            //remoteVideoView.setVisibility(View.VISIBLE);
+                            videoTrack.addSink(remoteVideoView);
+                            //setVideoViews();
+                            showRemoteVideo();
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+
+
             }
 
             @Override
@@ -628,12 +634,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 //iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED ||
                 if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED){
-                    showStatusTextView();
+
+                    if (localAppRole==APP_ROLE_DISPLAY){
+                        showStatusTextView();
+                    }
+                    else {
+                        showLocalVideo();
+                    }
+
+                    visibleWatchIndicator(false);
+
                 }
 
                 if (iceConnectionState == PeerConnection.IceConnectionState.CONNECTED){
                     if (localAppRole==APP_ROLE_CAMERA){
                         showLocalVideo();
+                        visibleWatchIndicator(true);
                     }
                     else {
                         showRemoteVideo();
@@ -901,6 +917,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.height = 0;
             }
             remoteVideoView.setLayoutParams(params);
+
         });
         Log.d("Mainr22", "VisibleRemoteVideoView=" + viewVisible );
     }
@@ -918,6 +935,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.height = 0;
             }
             localVideoView.setLayoutParams(params);
+
         });
         Log.d("Mainr22", "VisibleLocalVideoView=" + viewVisible );
     }
@@ -925,6 +943,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void visibleStatusTextView(final boolean viewVisible) {
         runOnUiThread(() -> {
+
             ViewGroup.LayoutParams params = statusTextView.getLayoutParams();
             if (viewVisible) {
                 params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -933,8 +952,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.height = 0;
             }
             statusTextView.setLayoutParams(params);
+
         });
         Log.d("Mainr22", "VisibleTextView=" + viewVisible );
+    }
+
+
+    private void visibleWatchIndicator(final boolean indicatorVisible){
+        runOnUiThread(() -> {
+
+            ViewGroup.LayoutParams params = watchIndicator.getLayoutParams();
+            if (indicatorVisible) {
+                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            } else {
+                params.height = 0;
+            }
+            watchIndicator.setLayoutParams(params);
+
+        });
     }
 
 
@@ -957,31 +993,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * Closing up - normal hangup and app destroye
      */
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.end_call: {
-                //sendLeave();
-                hangup();
-                break;
-            }
-            case R.id.start_call: {
-                //doCall();
-                //sendLogin("rd1");
-                //testCreateOffer2();
-
-                isInitiator=true;
-                if (!isWebSocketConnected) {
-                    createLocalSocket();
-                    sendLogin(localUserLogin, localUserPassword, remoteUser);
-                } else {
-                    tryToStart(0);
-                }
-
-                break;
-            }
-        }
-    }
+//    @Override
+//    public void onClick(View v) {
+//        switch (v.getId()) {
+//            case R.id.end_call: {
+//                //sendLeave();
+//                hangup();
+//                break;
+//            }
+//            case R.id.start_call: {
+//                //doCall();
+//                //sendLogin("rd1");
+//                //testCreateOffer2();
+//
+//                isInitiator=true;
+//                if (!isWebSocketConnected) {
+//                    createLocalSocket();
+//                    sendLogin(localUserLogin, localUserPassword, remoteUser);
+//                } else {
+//                    tryToStart(0);
+//                }
+//
+//                break;
+//            }
+//        }
+//    }
 
 
 
