@@ -1,4 +1,4 @@
-package com.roman.webrd1;
+package com.roman.pawelm;
 
 
 import android.Manifest;
@@ -13,7 +13,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -171,15 +171,28 @@ public class MainActivity extends AppCompatActivity {
         //tryToStart(); call this from WebSocketListener
 
 
-        // https://developer.android.com/training/system-ui/navigation
-        View decorView = getWindow().getDecorView();
-        // Hide both the navigation bar and the status bar.
-        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
-        // a general rule, you should design your app to hide the status bar whenever you
-        // hide the navigation bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN ;
-        decorView.setSystemUiVisibility(uiOptions);
+//        // https://developer.android.com/training/system-ui/navigation
+//        View decorView = getWindow().getDecorView();
+//        // Hide both the navigation bar and the status bar.
+//        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+//        // a general rule, you should design your app to hide the status bar whenever you
+//        // hide the navigation bar.
+//        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                | View.SYSTEM_UI_FLAG_FULLSCREEN ;
+//
+//
+//
+//
+//        decorView.setSystemUiVisibility(uiOptions);
+
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (localAppRole==APP_ROLE_CAMERA) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+
+        //FLAG_KEEP_SCREEN_ON
+
+
 
         //setVideoViews();
 
@@ -190,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
         else {
             showStatusTextView();
         }
-        logToServer();
+        //logToServer();
 
 
     }
@@ -198,6 +211,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        logToServer();
+
 
         Logging.d(TAG, ON_START);
     }
@@ -222,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
 
         Logging.d(TAG,ON_STOP);
+        hangup();
     }
 
 
@@ -1026,11 +1043,8 @@ public class MainActivity extends AppCompatActivity {
                 localPeer.close();
                 localPeer = null;
             }
-            sendLeave();
-            wsListener.close(1000, null);
-            //isWebSocketConnected=false;
-            //updateVideoViews(false);
-            //setVideoViews();
+//            sendLeave();
+//            wsListener.close(1000, null);
             showStatusTextView();
 
 

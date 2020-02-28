@@ -1,4 +1,4 @@
-package com.roman.webrd1;
+package com.roman.pawelm;
 
 import org.junit.Test;
 

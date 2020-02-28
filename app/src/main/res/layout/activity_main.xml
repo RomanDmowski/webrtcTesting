@@ -6,7 +6,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:keepScreenOn="true"
     android:orientation="vertical">
 
 
@@ -16,7 +15,7 @@
         android:layout_height="match_parent"
 
         android:orientation="vertical"
-        tools:context="com.roman.webrd1.MainActivity">
+        tools:context="com.roman.pawelm.MainActivity">
 
         <!--        <android.support.v7.widget.Toolbar-->
         <!--            android:id="@+id/my_toolbar"-->

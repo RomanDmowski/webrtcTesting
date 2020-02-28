@@ -11,7 +11,7 @@ android {
     }
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.roman.webrd1"
+        applicationId "com.roman.pawelm"
         minSdkVersion 23
         targetSdkVersion 28
         versionCode 1

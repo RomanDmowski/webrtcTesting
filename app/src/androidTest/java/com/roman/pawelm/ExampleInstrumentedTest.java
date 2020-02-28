@@ -1,4 +1,4 @@
-package com.roman.webrd1;
+package com.roman.pawelm;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
