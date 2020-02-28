@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         createFactories();
 
-        if (localAppRole==APP_ROLE_DISPLAY){
+        if (localAppRole==APP_ROLE_CAMERA){
             startCamera();
             localVideoTrack.addSink(localVideoView);
         }
