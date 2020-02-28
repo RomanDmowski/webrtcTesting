@@ -53,10 +53,10 @@ import okhttp3.WebSocket;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 public class MainActivity extends AppCompatActivity {
-    private String socketAddress = "http://10.0.2.2:9090";
+    //private String socketAddress = "http://10.0.2.2:9090";
 
     //private String socketAddress = "http://192.168.0.104:9090";
-    //private String socketAddress = "http://ec2-18-188-37-20.us-east-2.compute.amazonaws.com:1337";
+    private String socketAddress = "http://ec2-54-90-124-76.compute-1.amazonaws.com:9090";
 
 
     private WebSocket wsListener;
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         createFactories();
 
-        if (localAppRole==APP_ROLE_CAMERA){
+        if (localAppRole==APP_ROLE_DISPLAY){
             startCamera();
             localVideoTrack.addSink(localVideoView);
         }
@@ -237,7 +237,6 @@ public class MainActivity extends AppCompatActivity {
         hangup();
         super.onDestroy();
         Logging.d(TAG,ON_DESTROY);
-
 
     }
 
@@ -595,7 +594,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAddStream(MediaStream mediaStream) {
                 //("Received Remote stream");
-                Log.d("createPeer22Connection->", "on AddStreamReceived Remote stream" );
+                Log.d("createPeer22->", "on AddStreamReceived Remote stream" );
                 super.onAddStream(mediaStream);
 
                 if (localAppRole==APP_ROLE_DISPLAY){

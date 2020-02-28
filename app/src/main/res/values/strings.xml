@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">webrd1</string>
-    <string name="status_waiting_for_camera">Waiting for a video from the remote camera ...</string>
+    <string name="app_name">Monitor</string>
+    <string name="status_waiting_for_camera">Oczekiwanie na sygnał z kamery ...</string>
 
 </resources>

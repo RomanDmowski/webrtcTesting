@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('/home/mri/AndroidStudioProjects/rdKeystore.jks')
+            storePassword 'haselko22'
+            keyAlias = 'key0'
+            keyPassword 'haselko22'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.roman.webrd1"
