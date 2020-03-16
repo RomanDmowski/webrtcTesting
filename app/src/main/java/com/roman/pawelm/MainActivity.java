@@ -53,7 +53,7 @@ import okhttp3.WebSocket;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 public class MainActivity extends AppCompatActivity {
-    //private String socketAddress = "http://10.0.2.2:9090";
+    //private String socketAddress = "https://10.0.2.2:9090";
 
     //private String socketAddress = "http://192.168.0.104:9090";
     private String socketAddress = "http://ec2-54-90-124-76.compute-1.amazonaws.com:9090";
