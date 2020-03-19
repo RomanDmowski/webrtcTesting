@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private SurfaceTextureHelper textureHelper;
 
     private TextView statusTextView;
+    private ImageView reloadImage;
 
 //    private Button hangup;
 //    private Button startCall;
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -197,18 +198,24 @@ public class MainActivity extends AppCompatActivity {
         //FLAG_KEEP_SCREEN_ON
 
 
-        ImageView myImage =  findViewById(R.id.imageView);
-        myImage.setImageAlpha(145);
+
+//        reloadImage.setImageAlpha(145);
 
 
 
         //setVideoViews();
+
+
 
         visibleWatchIndicator(false);
         if (localAppRole.equals(APP_ROLE_CAMERA)){
             showLocalVideo();
         }
         else {
+            //initial configuration of views
+            visibleLocalVideoView(false);
+            visibleRemoteVideoView(false);
+            visibleStatusTextView(true);
             showStatusTextView();
         }
         //logToServer();
@@ -335,6 +342,8 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         statusTextView = findViewById(R.id.text_status);
+        reloadImage =  findViewById(R.id.imageView);
+
 
 
 //        hangup.setOnClickListener(this);
@@ -878,7 +887,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showLocalVideo(){
-
+        reloadImage.setImageAlpha(0);
         visibleLocalVideoView(true);
         visibleRemoteVideoView(false);
         visibleStatusTextView(false);
@@ -887,6 +896,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showRemoteVideo(){
+        reloadImage.setImageAlpha(0);
         visibleLocalVideoView(false);
         visibleRemoteVideoView(true);
         visibleStatusTextView(false);
@@ -894,10 +904,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     private void showStatusTextView(){
-        visibleLocalVideoView(false);
-        visibleRemoteVideoView(false);
-        visibleStatusTextView(true);
+//        visibleLocalVideoView(false);
+//        visibleRemoteVideoView(false);
+//        visibleStatusTextView(true);
+        reloadImage.setImageAlpha(255);
     }
 
 //    private void setVideoViews(){
