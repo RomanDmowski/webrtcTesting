@@ -9,6 +9,7 @@
     android:orientation="vertical">
 
 
+
     <LinearLayout
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
@@ -16,6 +17,7 @@
 
         android:orientation="vertical"
         tools:context="com.roman.pawelm.MainActivity">
+
 
         <!--        <android.support.v7.widget.Toolbar-->
         <!--            android:id="@+id/my_toolbar"-->
@@ -25,6 +27,8 @@
         <!--            android:elevation="4dp"-->
         <!--            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->
         <!--            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>-->
+
+
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/remote_gl_surface_view"
@@ -43,11 +47,31 @@
             android:layout_marginTop="200dp"
             android:padding="20dp"
             android:text="@string/status_waiting_for_camera"
+            android:textColor="#FFFFFF"
+            android:background="@color/colorPrimary"
+
             android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
 
         <!--            android:layout_height="match_parent" -->
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:visibility="visible"
+            app:srcCompat="@drawable/reload" />
+
+    </LinearLayout>
+
+
+
 
     <LinearLayout
         android:layout_width="match_parent"

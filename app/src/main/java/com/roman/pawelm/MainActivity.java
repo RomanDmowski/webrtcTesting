@@ -11,9 +11,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -126,7 +128,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+
+
+ //       Toolbar myToolbar = findViewById(R.id.my_toolbar);
 //        setSupportActionBar(myToolbar);
 
 
@@ -193,6 +197,10 @@ public class MainActivity extends AppCompatActivity {
         //FLAG_KEEP_SCREEN_ON
 
 
+        ImageView myImage =  findViewById(R.id.imageView);
+        myImage.setImageAlpha(145);
+
+
 
         //setVideoViews();
 
@@ -207,6 +215,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu_main, menu);
+        return true;
+    }
+
 
     @Override
     protected void onStart() {
