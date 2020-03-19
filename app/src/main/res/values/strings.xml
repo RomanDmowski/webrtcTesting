@@ -2,7 +2,7 @@
     <string name="app_name">PawelK</string>
     <string name="status_waiting_for_camera">Oczekiwanie na sygnał z kamery ...</string>
 
-    <string name="title_activity_splash_screen">SplashScreenActivity</string>
+    <string name="title_activity_splash_screen">Kameraz</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 

@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         initVideos();
         //getIceServers();
 
-
+        reloadImage.setImageAlpha(255);
         createFactories();
 
         if (localAppRole==APP_ROLE_CAMERA){

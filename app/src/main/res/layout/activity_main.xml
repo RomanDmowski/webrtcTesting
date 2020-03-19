@@ -10,20 +10,6 @@
 
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:visibility="visible"
-            app:srcCompat="@drawable/reload2" />
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -58,12 +44,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="200dp"
+            android:background="@color/colorPrimary"
+            android:gravity="bottom|center_horizontal"
             android:padding="20dp"
             android:text="@string/status_waiting_for_camera"
-            android:textColor="#FFFFFF"
-            android:background="@color/colorPrimary"
 
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="#FFFFFF" />
 
         <!--            android:layout_height="match_parent" -->
 
@@ -101,5 +88,19 @@
 
 
             app:srcCompat="@android:drawable/ic_menu_view" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:srcCompat="@drawable/reload2" />
     </LinearLayout>
 </FrameLayout>
