@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
+    public String localAppRole = APP_ROLE_CAMERA;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -1005,14 +1005,27 @@ public class MainActivity extends AppCompatActivity {
     private void visibleWatchIndicator(final boolean indicatorVisible){
         runOnUiThread(() -> {
 
-            ViewGroup.LayoutParams params = watchIndicator.getLayoutParams();
-            if (indicatorVisible) {
-                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+//            ViewGroup.LayoutParams params = watchIndicator.getLayoutParams();
+//            if (indicatorVisible) {
+//                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+//
+//            } else {
+//                params.height = 0;
+//            }
+//            watchIndicator.setLayoutParams(params);
 
-            } else {
-                params.height = 0;
+            if (indicatorVisible){
+                //watchIndicator.setImageAlpha(255);
+                watchIndicator.setVisibility(View.VISIBLE);
             }
-            watchIndicator.setLayoutParams(params);
+            else {
+                watchIndicator.setVisibility(View.INVISIBLE);
+            }
+
+
+
+
+
 
         });
     }
