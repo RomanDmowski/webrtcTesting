@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView statusTextView;
     private ImageView reloadImage;
+    private ImageButton settingsButton;
 
 //    private Button hangup;
 //    private Button startCall;
@@ -343,6 +345,14 @@ public class MainActivity extends AppCompatActivity {
 
         statusTextView = findViewById(R.id.text_status);
         reloadImage =  findViewById(R.id.imageView);
+
+        settingsButton =findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(),"SETTINGS",Toast.LENGTH_LONG).show();
+            }
+        });
 
 
 
