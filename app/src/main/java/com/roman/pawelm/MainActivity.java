@@ -2,6 +2,8 @@ package com.roman.pawelm;
 
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_ROLE_CAMERA = "c";
 
 
-    public String localAppRole = APP_ROLE_CAMERA;
+    public String localAppRole = APP_ROLE_DISPLAY;
     private String localUserName = "rd1";
 
     private String localUserLogin = localUserName + "_" + localAppRole;
@@ -135,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
 
  //       Toolbar myToolbar = findViewById(R.id.my_toolbar);
 //        setSupportActionBar(myToolbar);
+
+        readPreferences();
 
 
         isInitiator = false;    //default value
@@ -283,6 +287,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void readPreferences(){
+        Context context = this;
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        localUserName = sharedPref.getString(getString(R.string.saved_user_key),"rd1");
+        localUserPassword = sharedPref.getString(getString(R.string.saved_pass_key),"pas4");
+        localAppRole= sharedPref.getString(getString(R.string.saved_app_role_key),APP_ROLE_CAMERA);
+    }
+
+    private void saveAppRolePreference (String appRole){
+
+        Context context = this;
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.saved_app_role_key),appRole);
+        //editor.commit();
+        editor.apply();
+
+
+    }
 
     public void logToServer(){
 

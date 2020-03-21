@@ -1,9 +1,14 @@
 <resources>
-    <string name="app_name">PawelK</string>
+    <string name="app_name">Kameraz</string>
     <string name="status_waiting_for_camera">Oczekiwanie na sygnał z kamery ...</string>
 
     <string name="title_activity_splash_screen">Kameraz</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="saved_user_key">login_key</string>
+    <string name="saved_pass_key">pass_key</string>
+    <string name="saved_app_role_key">app_role_key</string>
+    <string name="preference_file_key">preference_file_key</string>
 
 </resources>
