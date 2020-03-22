@@ -36,7 +36,7 @@ android {
         }
         Camera {
             dimension = 'taskFlavor'
-            applicationId = 'com.roman.pawelc'
+            applicationId = 'com.roman.pawel'
             applicationIdSuffix = 'pawel'
         }
     }

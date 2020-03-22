@@ -11,4 +11,6 @@
     <string name="saved_app_role_key">app_role_key</string>
     <string name="preference_file_key">preference_file_key</string>
 
+    <string name="title_settings_activity">Ustawienia</string>
+
 </resources>
