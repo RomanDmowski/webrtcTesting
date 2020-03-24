@@ -3,8 +3,6 @@
     <string name="status_waiting_for_camera">Oczekiwanie na sygnał z kamery ...</string>
 
     <string name="title_activity_splash_screen">Kameraz</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string name="saved_user_key">login_key</string>
     <string name="saved_pass_key">pass_key</string>
@@ -12,5 +10,21 @@
     <string name="preference_file_key">preference_file_key</string>
 
     <string name="title_settings_activity">Ustawienia</string>
+
+    <string name="pref_launch_cognito_title">Dane uzytkownika</string>
+    <string name="pref_launch_cognito_summary">Login i haslo</string>
+
+    <string name="pref_app_role_title">Kamera</string>
+    <string name="pref_app_role_summary">Tryb pracy aplikacji: kamera lub monitor</string>
+    <string-array name="pref_app_role_array_entries">
+        <item>Kamera</item>
+        <item>Monitor</item>
+    </string-array>
+
+    <string-array name="pref_app_role_array_values">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
 
 </resources>

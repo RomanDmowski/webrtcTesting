@@ -28,18 +28,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    flavorDimensions 'taskFlavor'
-    productFlavors {
-        Monitor {
-            dimension = 'taskFlavor'
-            applicationId = 'com.roman.pawelm'
-        }
-        Camera {
-            dimension = 'taskFlavor'
-            applicationId = 'com.roman.pawel'
-            applicationIdSuffix = 'pawel'
-        }
-    }
 }
 
 dependencies {

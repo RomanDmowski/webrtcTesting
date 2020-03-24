@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/pref_app_role_array_entries"
+        android:entryValues="@array/pref_app_role_array_values"
+        android:key="app_role"
+        android:title="@string/pref_app_role_title"
+        android:summary="@string/pref_app_role_summary"
+        android:icon="@mipmap/ic_launcher"/>
+
+    <Preference
+        android:key="launch_cognito"
+        android:title="@string/pref_launch_cognito_title"
+        android:summary="@string/pref_launch_cognito_summary">
+        <intent
+            android:targetPackage="com.roman"
+            android:targetClass="com.roman.CognitoActivity"/>
+    </Preference>
+
+
+
+</PreferenceScreen>

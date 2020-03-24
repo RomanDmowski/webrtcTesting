@@ -24,7 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.roman.pawel.pawel.SettingsActivity;
+import com.roman.SettingsActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
