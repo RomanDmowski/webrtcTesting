@@ -9,6 +9,9 @@
     <string name="saved_app_role_key">app_role_key</string>
     <string name="preference_file_key">preference_file_key</string>
 
+    <string name="app_role_camera_key">c</string>
+    <string name="app_role_display_key">d</string>
+
     <string name="title_settings_activity">Ustawienia</string>
 
     <string name="pref_launch_cognito_title">Dane uzytkownika</string>
@@ -22,8 +25,8 @@
     </string-array>
 
     <string-array name="pref_app_role_array_values">
-        <item>1</item>
-        <item>2</item>
+        <item>@string/app_role_camera_key</item>
+        <item>@string/app_role_display_key</item>
     </string-array>
 
 

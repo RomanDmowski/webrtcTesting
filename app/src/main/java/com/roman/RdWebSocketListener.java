@@ -1,5 +1,7 @@
 package com.roman;
 
+import com.roman.pawelm.R;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -11,12 +13,13 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-import static com.roman.MainActivity.APP_ROLE_CAMERA;
+//import static com.roman.MainActivity.APP_ROLE_CAMERA;
 
 class RdWebSocketListener extends WebSocketListener {
 
     private static final String TAG = "RdWebSocketListener22";
     private MainActivity mainActivity;
+
 
 
     //public RdWebSocketListener(MainActivity mainActivity, String remoteUser) {
@@ -135,7 +138,7 @@ class RdWebSocketListener extends WebSocketListener {
                 if(jsonString.equalsIgnoreCase("startCall")) {
                     Logging.d(TAG, "Action: startCall");
                     //mainActivity.isInitiator=true;
-                    if (mainActivity.localAppRole.equals(APP_ROLE_CAMERA)) {
+                    if (mainActivity.localAppRole.equals(mainActivity.APP_ROLE_CAMERA )) {
                         mainActivity.tryToStart(500);
                     }
                 } else {

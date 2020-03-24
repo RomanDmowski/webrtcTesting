@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -115,15 +116,26 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String APP_ROLE_DISPLAY = "d";
-    public static final String APP_ROLE_CAMERA = "c";
+//    public  String APP_ROLE_DISPLAY = "d";
+//    public  String APP_ROLE_CAMERA = "c";
+//
+//
+//    public String localAppRole = "APP_ROLE_CAMERA";
+//    private String localUserName = "rd1";
+//
+//    private String localUserLogin = localUserName + "_" + localAppRole;
+//    private String localUserPassword = "pas4";
+
+    public  String APP_ROLE_DISPLAY;
+    public  String APP_ROLE_CAMERA ;
 
 
-    public String localAppRole = APP_ROLE_DISPLAY;
-    private String localUserName = "rd1";
+    public String localAppRole;
+    private String localUserName;
 
-    private String localUserLogin = localUserName + "_" + localAppRole;
-    private String localUserPassword = "pas4";
+    private String localUserLogin ;
+    private String localUserPassword ;
+
 
 
     private String remoteAppRole = "";
@@ -138,10 +150,30 @@ public class MainActivity extends AppCompatActivity {
 
 
 
- //       Toolbar myToolbar = findViewById(R.id.my_toolbar);
-//        setSupportActionBar(myToolbar);
+        APP_ROLE_DISPLAY = "d";
+        APP_ROLE_CAMERA = "c";
+
+
+//        localAppRole = APP_ROLE_DISPLAY;
+//        localUserName = "rd1";
+//
+//        localUserLogin = localUserName + "_" + localAppRole;
+//        localUserPassword = "pas4";
+
+
+
+
+
+
+
 
         readPreferences();
+
+        localUserLogin = localUserName + "_" + localAppRole;
+
+
+
+
 
 
         isInitiator = false;    //default value
@@ -171,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
         reloadImage.setImageAlpha(255);
         createFactories();
 
-        if (localAppRole==APP_ROLE_CAMERA){
+        if (localAppRole.equals( APP_ROLE_CAMERA)){
             startCamera();
             localVideoTrack.addSink(localVideoView);
         }
@@ -291,13 +323,19 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void readPreferences(){
-        Context context = this;
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+//        Context context = this;
+//        SharedPreferences sharedPref = context.getSharedPreferences(
+//                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+//
+//        localUserName = sharedPref.getString(getString(R.string.saved_user_key),"rd1");
+//        localUserPassword = sharedPref.getString(getString(R.string.saved_pass_key),"pas4");
+//        localAppRole= sharedPref.getString(getString(R.string.saved_app_role_key),APP_ROLE_CAMERA);
 
-        localUserName = sharedPref.getString(getString(R.string.saved_user_key),"rd1");
-        localUserPassword = sharedPref.getString(getString(R.string.saved_pass_key),"pas4");
-        localAppRole= sharedPref.getString(getString(R.string.saved_app_role_key),APP_ROLE_CAMERA);
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        localAppRole = SP.getString("app_role","c");
+        localUserName = "rd1";
+        localUserPassword = "pas4";
+
     }
 
     private void saveAppRolePreference (String appRole){

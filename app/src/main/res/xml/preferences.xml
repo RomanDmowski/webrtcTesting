@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
-        android:defaultValue="1"
+        android:defaultValue="c"
         android:entries="@array/pref_app_role_array_entries"
         android:entryValues="@array/pref_app_role_array_values"
         android:key="app_role"
