@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
 
         android:orientation="vertical"
-        tools:context="com.roman.pawelm.MainActivity">
+        tools:context="com.roman.pawelm.com.roman.MainActivity">
 
 
         <!--        <android.support.v7.widget.Toolbar-->

@@ -21,9 +21,9 @@
         <activity
             android:name="com.roman.SettingsActivity"
             android:label="@string/title_settings_activity"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName="com.roman.MainActivity"></activity>
         <activity
-            android:name=".MainActivity"
+            android:name="com.roman.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

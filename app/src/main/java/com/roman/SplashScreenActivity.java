@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.roman.pawelm.MainActivity;
-
 //import com.roman.pawelc.pawel.R;
 
 /**

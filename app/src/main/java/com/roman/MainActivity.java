@@ -1,4 +1,4 @@
-package com.roman.pawelm;
+package com.roman;
 
 
 import android.Manifest;
@@ -24,7 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.roman.SettingsActivity;
+import com.roman.pawelm.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -1,4 +1,4 @@
-package com.roman.pawelm;
+package com.roman;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,7 +11,7 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-import static com.roman.pawelm.MainActivity.APP_ROLE_CAMERA;
+import static com.roman.MainActivity.APP_ROLE_CAMERA;
 
 class RdWebSocketListener extends WebSocketListener {
 
