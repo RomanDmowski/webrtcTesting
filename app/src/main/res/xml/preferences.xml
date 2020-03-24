@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preferences">
 
     <ListPreference
         android:defaultValue="c"
         android:entries="@array/pref_app_role_array_entries"
         android:entryValues="@array/pref_app_role_array_values"
+        android:icon="@mipmap/ic_launcher"
         android:key="app_role"
-        android:title="@string/pref_app_role_title"
+
         android:summary="@string/pref_app_role_summary"
-        android:icon="@mipmap/ic_launcher"/>
+        android:title="@string/pref_app_role_title" />
 
     <Preference
         android:key="launch_cognito"
-        android:title="@string/pref_launch_cognito_title"
-        android:summary="@string/pref_launch_cognito_summary">
+        android:summary="@string/pref_launch_cognito_summary"
+        android:title="@string/pref_launch_cognito_title">
         <intent
-            android:targetPackage="com.roman"
-            android:targetClass="com.roman.CognitoActivity"/>
+            android:targetClass="com.roman.CognitoActivity"
+            android:targetPackage="com.roman" />
     </Preference>
-
 
 
 </PreferenceScreen>

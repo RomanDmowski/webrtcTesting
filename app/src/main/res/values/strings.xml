@@ -11,17 +11,19 @@
 
     <string name="app_role_camera_key">c</string>
     <string name="app_role_display_key">d</string>
+    <string name="app_role_camera_label">Kamera</string>
+    <string name="app_role_display_label">Monitor</string>
 
     <string name="title_settings_activity">Ustawienia</string>
 
     <string name="pref_launch_cognito_title">Dane uzytkownika</string>
     <string name="pref_launch_cognito_summary">Login i haslo</string>
 
-    <string name="pref_app_role_title">Kamera</string>
-    <string name="pref_app_role_summary">Tryb pracy aplikacji: kamera lub monitor</string>
+    <string name="pref_app_role_title">Zmien tryb pracy aplikacji</string>
+    <string name="pref_app_role_summary">Kamera</string>
     <string-array name="pref_app_role_array_entries">
-        <item>Kamera</item>
-        <item>Monitor</item>
+        <item>@string/app_role_camera_label</item>
+        <item>@string/app_role_display_label</item>
     </string-array>
 
     <string-array name="pref_app_role_array_values">
