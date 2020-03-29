@@ -1161,8 +1161,8 @@ public class MainActivity extends AppCompatActivity {
                 localPeer.close();
                 localPeer = null;
             }
-//            sendLeave();
-//            wsListener.close(1000, null);
+            sendLeave();
+            wsListener.close(1000, null);
             showStatusTextView();
 
 
