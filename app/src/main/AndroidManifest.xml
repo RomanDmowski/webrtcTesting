@@ -17,7 +17,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name="com.roman.CognitoActivity"></activity>
+        <activity
+            android:name="com.roman.CognitoActivity"
+            android:label="Cognito"
+            android:theme="@style/AppTheme.NoActionBar.Launcher">
+
+        </activity>
         <activity
             android:name="com.roman.SettingsActivity"
             android:label="@string/title_settings_activity"

@@ -62,10 +62,10 @@ import okhttp3.WebSocket;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 public class MainActivity extends AppCompatActivity {
-    //private String socketAddress = "https://10.0.2.2:9090";
+    private String socketAddress = "http://10.0.2.2:9090";
 
     //private String socketAddress = "http://192.168.0.104:9090";
-    private String socketAddress = "http://ec2-54-90-124-76.compute-1.amazonaws.com:9090";
+    //private String socketAddress = "http://ec2-54-90-124-76.compute-1.amazonaws.com:9090";
 
 
     private WebSocket wsListener;
@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 //        decorView.setSystemUiVisibility(uiOptions);
 
         //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        if (localAppRole==APP_ROLE_CAMERA) {
+        if (localAppRole.equals(APP_ROLE_CAMERA)) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
@@ -259,6 +259,12 @@ public class MainActivity extends AppCompatActivity {
             visibleStatusTextView(true);
             showStatusTextView();
         }
+
+
+
+
+
+
         //logToServer();
 
 
@@ -338,18 +344,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void saveAppRolePreference (String appRole){
 
-        Context context = this;
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.saved_app_role_key),appRole);
-        //editor.commit();
-        editor.apply();
-
-
-    }
 
 
     public void openSettingsActivity(View view) {
@@ -494,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        if (localAppRole==APP_ROLE_CAMERA){
+        if (localAppRole.equals(APP_ROLE_CAMERA)){
             sdpConstraints.mandatory.add(
                     new MediaConstraints.KeyValuePair("offerToReceiveAudio", "false"));
             sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
@@ -721,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("createPeer22->", "on AddStreamReceived Remote stream" );
                 super.onAddStream(mediaStream);
 
-                if (localAppRole==APP_ROLE_DISPLAY){
+                if (localAppRole.equals(APP_ROLE_DISPLAY)){
                     final VideoTrack videoTrack = mediaStream.videoTracks.get(0);
                     runOnUiThread(() -> {
                         try {
@@ -758,7 +753,7 @@ public class MainActivity extends AppCompatActivity {
                 //iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED ||
                 if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED){
 
-                    if (localAppRole==APP_ROLE_DISPLAY){
+                    if (localAppRole.equals(APP_ROLE_DISPLAY)){
                         showStatusTextView();
                     }
                     else {
@@ -770,7 +765,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (iceConnectionState == PeerConnection.IceConnectionState.CONNECTED){
-                    if (localAppRole==APP_ROLE_CAMERA){
+                    if (localAppRole.equals(APP_ROLE_CAMERA)){
                         showLocalVideo();
                         visibleWatchIndicator(true);
                     }
@@ -882,7 +877,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        if (localAppRole==APP_ROLE_CAMERA){
+        if (localAppRole.equals(APP_ROLE_CAMERA)){
             sdpConstraints.mandatory.add(
                     new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
             sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair(
