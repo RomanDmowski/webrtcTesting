@@ -154,27 +154,9 @@ public class MainActivity extends AppCompatActivity {
         APP_ROLE_CAMERA = "c";
 
 
-//        localAppRole = APP_ROLE_DISPLAY;
-//        localUserName = "rd1";
-//
-//        localUserLogin = localUserName + "_" + localAppRole;
-//        localUserPassword = "pas4";
-
-
-
-
-
-
-
-
         readPreferences();
 
         localUserLogin = localUserName + "_" + localAppRole;
-
-
-
-
-
 
         isInitiator = false;    //default value
         isWebSocketConnected=false;
@@ -239,15 +221,6 @@ public class MainActivity extends AppCompatActivity {
         //FLAG_KEEP_SCREEN_ON
 
 
-
-//        reloadImage.setImageAlpha(145);
-
-
-
-        //setVideoViews();
-
-
-
         visibleWatchIndicator(false);
         if (localAppRole.equals(APP_ROLE_CAMERA)){
             showLocalVideo();
@@ -259,14 +232,6 @@ public class MainActivity extends AppCompatActivity {
             visibleStatusTextView(true);
             showStatusTextView();
         }
-
-
-
-
-
-
-        //logToServer();
-
 
     }
 
@@ -339,8 +304,8 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         localAppRole = SP.getString("app_role","c");
-        localUserName = "rd1";
-        localUserPassword = "pas4";
+        localUserName = SP.getString("username","");
+        localUserPassword = SP.getString("password","");
 
     }
 

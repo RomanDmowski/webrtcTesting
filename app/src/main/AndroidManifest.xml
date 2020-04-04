@@ -18,7 +18,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name="com.roman.CognitoActivity"
+            android:name="com.roman.LoginActivity"
             android:label="Cognito"
             android:theme="@style/AppTheme.NoActionBar.Launcher">
 

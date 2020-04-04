@@ -2,6 +2,7 @@ package com.roman;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -46,6 +47,34 @@ public class SettingsFragment extends PreferenceFragment {
 
 
         }
+
+
+
+        EditTextPreference usernamePreference = (EditTextPreference) findPreference("username");
+
+
+        if (usernamePreference != null) {
+
+            String useremail = usernamePreference.getText();
+            usernamePreference.setSummary(useremail);
+
+
+            usernamePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object new_app_role) {
+
+                    String _username = (String) new_app_role;
+
+                    preference.setSummary(_username);
+
+                    return true;
+                }
+            });
+
+
+        }
+
+
     }
 
 }

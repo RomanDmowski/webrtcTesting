@@ -5,7 +5,7 @@
     android:id="@+id/cognito"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.roman.CognitoActivity">
+    tools:context="com.roman.LoginActivity">
 
     <EditText
         android:id="@+id/editText"

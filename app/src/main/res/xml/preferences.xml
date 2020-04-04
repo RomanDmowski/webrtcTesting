@@ -11,15 +11,23 @@
 
         android:summary="@string/pref_app_role_summary"
         android:title="@string/pref_app_role_title" />
+    <EditTextPreference android:title="Your Name"
+        android:key="username"
+        android:inputType="textEmailAddress"
+        android:summary="Please provide your username"></EditTextPreference>
+    <EditTextPreference android:title="Password"
+        android:key="password"
+        android:inputType="textPassword"
+        android:summary="Please provide your password"></EditTextPreference>
 
-    <Preference
-        android:key="launch_cognito"
-        android:summary="@string/pref_launch_cognito_summary"
-        android:title="@string/pref_launch_cognito_title">
-        <intent
-            android:targetClass="com.roman.CognitoActivity"
-            android:targetPackage="com.roman" />
-    </Preference>
+<!--    <Preference-->
+<!--        android:key="launch_login"-->
+<!--        android:summary="@string/pref_launch_cognito_summary"-->
+<!--        android:title="@string/pref_launch_cognito_title">-->
+<!--        <intent-->
+<!--            android:targetClass="com.roman.LoginActivity.class"-->
+<!--            android:targetPackage="com.roman" />-->
+<!--    </Preference>-->
 
 
 </PreferenceScreen>
