@@ -316,6 +316,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
+
+    public void openNewUserActivity(View view) {
+        startActivity(new Intent(this, NewUserActivity.class));
+    }
+
     public void logToServer(){
 
 
@@ -880,6 +885,24 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("AFTERcreateOffer->", "DONE");
 
     }
+
+
+    public void createNewUser (String newlogin, String newpass)
+    {
+        try {
+            JSONObject json = new JSONObject();
+
+            json.put("type", "newuser");
+            json.put("newlogin", "test001");
+            json.put("newpass", "password02");
+            wsListener.send(json.toString());
+            Logging.d(TAG, "Creating newuser: " + json.toString());
+        } catch (Throwable e) {
+            Log.e("CreateNewUser", "Uncaught exception is: ", e);
+        }
+    }
+
+
 
     @SuppressWarnings("SameParameterValue")
     private void sendLogin(String myName, String myPassword, String otherUser) {

@@ -32,4 +32,14 @@
     </string-array>
 
 
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_already_have_an_account">Already have an account?</string>
+    <string name="prompt_dont_have_an_account">Don\'t have an account?</string>
+    <string name="action_sign_in">Login Sign in</string>
+    <string name="action_sign_up">Register Sign up</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+
+
 </resources>
