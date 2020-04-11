@@ -10,10 +10,6 @@ import android.widget.TextView;
 
 import com.roman.pawelm.R;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.webrtc.Logging;
-
 public class NewUserActivity extends AppCompatActivity {
 
     Button registerButton;
@@ -21,12 +17,8 @@ public class NewUserActivity extends AppCompatActivity {
     EditText newPassword;
     EditText newPasswordConfirmation;
     TextView textViewLinkSignIn;
-    private MainActivity mainActivity;
 
-    public NewUserActivity(MainActivity mainActivity) {
-        super();
-        this.mainActivity = mainActivity;
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +30,8 @@ public class NewUserActivity extends AppCompatActivity {
         newLogin = findViewById(R.id.new_user);
         newPassword = findViewById(R.id.new_password);
         newPasswordConfirmation = findViewById(R.id.new_password_confirmation);
-        registerButton=findViewById(R.id.register);
-        textViewLinkSignIn=findViewById(R.id.textViewLinkSignIn);
+        registerButton=findViewById(R.id.register_button);
+        textViewLinkSignIn=findViewById(R.id.textViewDontHaveAccount);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -50,7 +42,7 @@ public class NewUserActivity extends AppCompatActivity {
 
         textViewLinkSignIn.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                Intent intent = new Intent(this, OtherActivity.class);
+                Intent intent = new Intent(NewUserActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
@@ -62,7 +54,7 @@ public class NewUserActivity extends AppCompatActivity {
     private void createNewLogin(String _newUser, String _newPass)
     {
 
-        mainActivity.createNewUser(_newUser,_newPass);
+       // mainActivity.createNewUser(_newUser,_newPass);
 
 
 //        try {

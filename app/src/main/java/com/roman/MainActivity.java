@@ -148,21 +148,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        askForPermissions();
 
+        setContentView(R.layout.activity_main);
+        initViews();
 
         APP_ROLE_DISPLAY = "d";
         APP_ROLE_CAMERA = "c";
 
-
         readPreferences();
-
-        localUserLogin = localUserName + "_" + localAppRole;
-
-        isInitiator = false;    //default value
-        isWebSocketConnected=false;
-        isTryingReconnect=false;
-        isTryingReconnectWebSocket=false;
-        sdpConstraints = new MediaConstraints(); //was missing
+        initVideos();
 
         if (localAppRole.equals(APP_ROLE_DISPLAY)){
             remoteAppRole=APP_ROLE_CAMERA;
@@ -170,16 +165,19 @@ public class MainActivity extends AppCompatActivity {
             remoteAppRole = APP_ROLE_DISPLAY;
         }
 
-        remoteUser = localUserName + "_" + remoteAppRole;
 
+
+        isInitiator = false;    //default value
+        isWebSocketConnected=false;
+        isTryingReconnect=false;
+        isTryingReconnectWebSocket=false;
+        sdpConstraints = new MediaConstraints(); //was missing
 
         Logging.d(TAG, ON_CREATE);
 
-        askForPermissions();
 
-        setContentView(R.layout.activity_main);
-        initViews();
-        initVideos();
+
+
         //getIceServers();
 
         reloadImage.setImageAlpha(255);
@@ -233,6 +231,10 @@ public class MainActivity extends AppCompatActivity {
             showStatusTextView();
         }
 
+
+
+
+
     }
 
 
@@ -247,7 +249,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        logToServer();
+
+        readPreferences();
+
+        if (localUserName.isEmpty())
+        {
+            startActivity(new Intent(getApplicationContext(), NewUserActivity.class));
+        }
+        else
+        {
+            localUserLogin = localUserName + "_" + localAppRole;
+            remoteUser = localUserName + "_" + remoteAppRole;
+            logToServer();
+        }
 
 
         Logging.d(TAG, ON_START);
@@ -258,6 +272,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         Logging.d(TAG,ON_RESUME);
+
+
     }
 
     @Override
@@ -314,11 +330,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void openSettingsActivity(View view) {
         startActivity(new Intent(this, SettingsActivity.class));
+
     }
 
 
-    public void openNewUserActivity(View view) {
-        startActivity(new Intent(this, NewUserActivity.class));
+    public void openLoginActivity(View view) {
+        startActivity(new Intent(this, LoginActivity.class));
+
     }
 
     public void logToServer(){
@@ -367,11 +385,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void initViews() {
-//        hangup = findViewById(R.id.end_call);
-//        startCall = findViewById(R.id.start_call);
 
        watchIndicator = findViewById(R.id.watching_indicator);
-
 
         //TODO clean the code
 //        if (localAppRole.equals(APP_ROLE_CAMERA)){
@@ -383,18 +398,6 @@ public class MainActivity extends AppCompatActivity {
         statusTextView = findViewById(R.id.text_status);
         reloadImage =  findViewById(R.id.imageView);
 
-//        settingsButton =findViewById(R.id.settingsButton);
-//        settingsButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(),"SETTINGS",Toast.LENGTH_LONG).show();
-//            }
-//        });
-
-
-
-//        hangup.setOnClickListener(this);
-//        startCall.setOnClickListener(this);
     }
 
     private void initVideos() {
