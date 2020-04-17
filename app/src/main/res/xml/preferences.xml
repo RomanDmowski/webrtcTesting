@@ -20,14 +20,16 @@
         android:inputType="textPassword"
         android:summary="Please provide your password"></EditTextPreference>
 
-<!--    <Preference-->
-<!--        android:key="launch_login"-->
-<!--        android:summary="@string/pref_launch_cognito_summary"-->
-<!--        android:title="@string/pref_launch_cognito_title">-->
-<!--        <intent-->
-<!--            android:targetClass="com.roman.LoginActivity.class"-->
-<!--            android:targetPackage="com.roman" />-->
-<!--    </Preference>-->
+    <Preference
+        android:key="launch_login"
+        android:summary="Launch activity"
+        android:title="Sign up">
+        <intent
+            android:targetClass="com.roman.NewUserActivity"
+            android:targetPackage="com.roman" />
+    </Preference>
+
+
 
 
 </PreferenceScreen>

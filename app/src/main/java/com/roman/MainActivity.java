@@ -252,16 +252,16 @@ public class MainActivity extends AppCompatActivity {
 
         readPreferences();
 
-        if (localUserName.isEmpty())
-        {
-            startActivity(new Intent(getApplicationContext(), NewUserActivity.class));
-        }
-        else
-        {
+//        if (localUserName.isEmpty())
+//        {
+//            startActivity(new Intent(getApplicationContext(), NewUserActivity.class));
+//        }
+//        else
+//        {
             localUserLogin = localUserName + "_" + localAppRole;
             remoteUser = localUserName + "_" + remoteAppRole;
             logToServer();
-        }
+//        }
 
 
         Logging.d(TAG, ON_START);
