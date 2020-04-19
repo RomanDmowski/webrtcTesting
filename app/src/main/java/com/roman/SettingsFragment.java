@@ -49,30 +49,37 @@ public class SettingsFragment extends PreferenceFragment {
         }
 
 
-
-        EditTextPreference usernamePreference = (EditTextPreference) findPreference("username");
-
-
-        if (usernamePreference != null) {
-
-            String useremail = usernamePreference.getText();
-            usernamePreference.setSummary(useremail);
+        Preference launchLoginActivity = findPreference("launch_login");
+        launchLoginActivity.setSummary("roman.dmowski@outlook.com");
 
 
-            usernamePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object new_app_role) {
 
-                    String _username = (String) new_app_role;
+//        EditTextPreference usernamePreference = (EditTextPreference) findPreference("username");
+//
+//
+//        if (usernamePreference != null) {
+//
+//            String useremail = usernamePreference.getText();
+//            usernamePreference.setSummary(useremail);
+//
+//
+//            usernamePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+//                @Override
+//                public boolean onPreferenceChange(Preference preference, Object new_app_role) {
+//
+//                    String _username = (String) new_app_role;
+//
+//                    preference.setSummary(_username);
+//
+//                    return true;
+//                }
+//            });
+//
+//
+//        }
 
-                    preference.setSummary(_username);
-
-                    return true;
-                }
-            });
 
 
-        }
 
 
     }

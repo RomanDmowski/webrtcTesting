@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isWebSocketConnected;
     public boolean isTryingReconnect;
     public boolean isTryingReconnectWebSocket;
+
     private List<PeerConnection.IceServer> peerIceServers = new ArrayList<>();
 
     private static final String TAG = "MainActivityr22";
@@ -114,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String ON_SAVE_INSTANCE_STATE = "onSaveInstanceState";
 
 
+    static final String WAS_NEWUSER_OPENED = "wasNewUserOpened";
+    private boolean wasNewUserActivityOpened;
 
 
 //    public  String APP_ROLE_DISPLAY = "d";
@@ -148,6 +151,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        if (savedInstanceState != null) {
+//            // Restore value of members from saved state
+//            wasNewUserActivityOpened = savedInstanceState.getBoolean(WAS_NEWUSER_OPENED);
+//
+//        } else {
+//            wasNewUserActivityOpened=false;
+//        }
+
+
+
+        isInitiator = false;    //default value
+        isWebSocketConnected=false;
+        isTryingReconnect=false;
+        isTryingReconnectWebSocket=false;
+
+
         askForPermissions();
 
         setContentView(R.layout.activity_main);
@@ -166,11 +185,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
-        isInitiator = false;    //default value
-        isWebSocketConnected=false;
-        isTryingReconnect=false;
-        isTryingReconnectWebSocket=false;
         sdpConstraints = new MediaConstraints(); //was missing
 
         Logging.d(TAG, ON_CREATE);
@@ -231,12 +245,31 @@ public class MainActivity extends AppCompatActivity {
             showStatusTextView();
         }
 
-
-
-
-
     }
 
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//
+//        super.onSaveInstanceState(savedInstanceState);
+//
+//        savedInstanceState.putBoolean(WAS_NEWUSER_OPENED, wasNewUserActivityOpened);
+//
+//        Logging.d(TAG, "onSaveInstanceState");
+//        // Always call the superclass so it can save the view hierarchy state
+//
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        if (savedInstanceState != null) {
+//            // Restore value of members from saved state
+//            wasNewUserActivityOpened = savedInstanceState.getBoolean(WAS_NEWUSER_OPENED);
+//
+//        } else {
+//            wasNewUserActivityOpened=false;
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -252,16 +285,23 @@ public class MainActivity extends AppCompatActivity {
 
         readPreferences();
 
-//        if (localUserName.isEmpty())
-//        {
-//            startActivity(new Intent(getApplicationContext(), NewUserActivity.class));
-//        }
-//        else
-//        {
+        if (localUserName.isEmpty())
+        {
+            if (!wasNewUserActivityOpened)
+            {
+                wasNewUserActivityOpened=true;
+                savePreferenceBool(WAS_NEWUSER_OPENED,wasNewUserActivityOpened);
+                startActivity(new Intent(getApplicationContext(), NewUserActivity.class));
+
+            }
+
+        }
+        else
+        {
             localUserLogin = localUserName + "_" + localAppRole;
             remoteUser = localUserName + "_" + remoteAppRole;
             logToServer();
-//        }
+       }
 
 
         Logging.d(TAG, ON_START);
@@ -281,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
         Logging.d(TAG,ON_PAUSE);
+
+
     }
 
     @Override
@@ -322,10 +364,19 @@ public class MainActivity extends AppCompatActivity {
         localAppRole = SP.getString("app_role","c");
         localUserName = SP.getString("username","");
         localUserPassword = SP.getString("password","");
+        wasNewUserActivityOpened=SP.getBoolean(WAS_NEWUSER_OPENED,false);
 
     }
 
 
+    private void savePreferenceBool (String prefKey, Boolean valueBoolean){
+
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor editor = SP.edit();
+        editor.putBoolean(prefKey,valueBoolean);
+        editor.commit();
+
+    }
 
 
     public void openSettingsActivity(View view) {
@@ -924,15 +975,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendLeave() {
-        try {
-            JSONObject json = new JSONObject();
-            json.put("type", "leave");
-            json.put("name", localUserLogin);
-            wsListener.send(json.toString());
+       if (isWebSocketConnected){
+           try {
+               JSONObject json = new JSONObject();
+               json.put("type", "leave");
+               json.put("name", localUserLogin);
+               wsListener.send(json.toString());
 
-        } catch (Throwable e) {
-            Log.e("SendLogin", "Uncaught exception is: ", e);
-        }
+           } catch (Throwable e) {
+               Log.e("SendLogin", "Uncaught exception is: ", e);
+           }
+       }
+
     }
     private void sendOffer(SessionDescription sessionDescription) {
         //Sending the offer

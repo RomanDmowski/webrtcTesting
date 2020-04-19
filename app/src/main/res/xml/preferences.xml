@@ -2,6 +2,18 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:key="preferences">
 
+
+    <Preference
+        android:key="launch_login"
+        android:summary="Launch activity"
+        android:title="Sign up">
+        <intent
+            android:targetClass="com.roman.LoginActivity"
+            android:targetPackage="com.roman" />
+    </Preference>
+
+
+
     <ListPreference
         android:defaultValue="c"
         android:entries="@array/pref_app_role_array_entries"
@@ -11,23 +23,16 @@
 
         android:summary="@string/pref_app_role_summary"
         android:title="@string/pref_app_role_title" />
-    <EditTextPreference android:title="Your Name"
-        android:key="username"
-        android:inputType="textEmailAddress"
-        android:summary="Please provide your username"></EditTextPreference>
-    <EditTextPreference android:title="Password"
-        android:key="password"
-        android:inputType="textPassword"
-        android:summary="Please provide your password"></EditTextPreference>
+<!--    <EditTextPreference android:title="Your Name"-->
+<!--        android:key="username"-->
+<!--        android:inputType="textEmailAddress"-->
+<!--        android:summary="Please provide your username"></EditTextPreference>-->
+<!--    <EditTextPreference android:title="Password"-->
+<!--        android:key="password"-->
+<!--        android:inputType="textPassword"-->
+<!--        android:summary="Please provide your password"></EditTextPreference>-->
 
-    <Preference
-        android:key="launch_login"
-        android:summary="Launch activity"
-        android:title="Sign up">
-        <intent
-            android:targetClass="com.roman.NewUserActivity"
-            android:targetPackage="com.roman" />
-    </Preference>
+
 
 
 
