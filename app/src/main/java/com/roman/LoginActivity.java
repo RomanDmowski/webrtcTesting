@@ -2,6 +2,7 @@ package com.roman;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,7 +35,9 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 saveLogPass();
-                finish();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                //finish();
             }
         });
 
@@ -106,6 +109,13 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString(getString(R.string.preferences_user_key),loginUser.getText().toString());
         editor.putString(getString(R.string.preferences_pass_key),loginPassword.getText().toString());
         editor.apply();
+    }
+
+    private void updateUserDataSummary()
+
+    {
+//        Preference launchLoginActivity = findPreference("launch_login");
+//        launchLoginActivity.setSummary(localUserName);
     }
 
     private void setLoginPasswordValues()

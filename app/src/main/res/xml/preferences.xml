@@ -6,11 +6,12 @@
     <Preference
         android:key="launch_login"
         android:summary="Launch activity"
-        android:title="Sign up">
+        android:title="@string/prompt_save_user_data">
         <intent
             android:targetClass="com.roman.LoginActivity"
             android:targetPackage="com.roman" />
     </Preference>
+
 
 
 

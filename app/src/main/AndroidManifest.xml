@@ -23,8 +23,8 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name="com.roman.LoginActivity"
-            android:label="@string/action_sign_in_short"
-            android:parentActivityName="com.roman.MainActivity"/>
+            android:label="@string/prompt_save_user_data"
+            android:parentActivityName="com.roman.SettingsActivity"/>
         <activity android:name="com.roman.NewUserActivity"
             android:label="@string/action_sign_up"
             android:parentActivityName="com.roman.MainActivity"/>

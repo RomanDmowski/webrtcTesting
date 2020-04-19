@@ -1,11 +1,13 @@
 package com.roman;
 
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.view.Menu;
 
@@ -48,9 +50,14 @@ public class SettingsFragment extends PreferenceFragment {
 
         }
 
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+        String localUserName = SP.getString(getString(R.string.preferences_user_key),"");
 
         Preference launchLoginActivity = findPreference("launch_login");
-        launchLoginActivity.setSummary("roman.dmowski@outlook.com");
+        launchLoginActivity.setSummary(localUserName);
+
+
+
 
 
 

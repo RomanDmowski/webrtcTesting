@@ -360,10 +360,13 @@ public class MainActivity extends AppCompatActivity {
 //        localUserPassword = sharedPref.getString(getString(R.string.saved_pass_key),"pas4");
 //        localAppRole= sharedPref.getString(getString(R.string.saved_app_role_key),APP_ROLE_CAMERA);
 
+
+
+
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         localAppRole = SP.getString("app_role","c");
-        localUserName = SP.getString("username","");
-        localUserPassword = SP.getString("password","");
+        localUserName = SP.getString(getString(R.string.preferences_user_key),"");
+        localUserPassword = SP.getString(getString(R.string.preferences_pass_key),"");
         wasNewUserActivityOpened=SP.getBoolean(WAS_NEWUSER_OPENED,false);
 
     }

@@ -35,8 +35,7 @@
         android:layout_marginEnd="24dp"
 
         android:hint="@string/prompt_password"
-        android:imeActionLabel="@string/action_sign_in_short"
-        android:imeOptions="actionDone"
+
         android:inputType="textPassword"
         android:selectAllOnFocus="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -53,8 +52,7 @@
         android:layout_marginEnd="24dp"
 
         android:hint="@string/prompt_password"
-        android:imeActionLabel="@string/action_sign_in_short"
-        android:imeOptions="actionDone"
+
         android:inputType="textPassword"
         android:selectAllOnFocus="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -100,7 +98,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:text="@string/action_sign_in_short"
+            android:text="@string/action_sign_up_short"
             android:textColor="#3F51B5"
             android:textStyle="bold" />
     </LinearLayout>

@@ -54,7 +54,7 @@ public class NewUserActivity extends AppCompatActivity {
     private void createNewLogin(String _newUser, String _newPass)
     {
 
-       // mainActivity.createNewUser(_newUser,_newPass);
+       //MainActivity.createNewUser(_newUser,_newPass);
 
 
 //        try {
