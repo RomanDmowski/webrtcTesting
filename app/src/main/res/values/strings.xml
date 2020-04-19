@@ -4,10 +4,9 @@
 
     <string name="title_activity_splash_screen">Kameraz</string>
 
-    <string name="saved_user_key">login_key</string>
-    <string name="saved_pass_key">pass_key</string>
-    <string name="saved_app_role_key">app_role_key</string>
-    <string name="preference_file_key">preference_file_key</string>
+    <string name="preferences_user_key">login_key</string>
+    <string name="preferences_pass_key">pass_key</string>
+    <string name="preferences_app_role_key">app_role_key</string>
 
     <string name="app_role_camera_key">c</string>
     <string name="app_role_display_key">d</string>
