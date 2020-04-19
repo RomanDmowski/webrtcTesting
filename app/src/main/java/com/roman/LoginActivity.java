@@ -81,6 +81,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        setLoginPasswordValues();
+
 
     }
 
@@ -101,8 +103,24 @@ public class LoginActivity extends AppCompatActivity {
     {
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         SharedPreferences.Editor editor = SP.edit();
-        editor.putString(getString(R.string.preferences_user_key),loginUser.toString());
-        editor.putString(getString(R.string.preferences_pass_key),loginPassword.toString());
+        editor.putString(getString(R.string.preferences_user_key),loginUser.getText().toString());
+        editor.putString(getString(R.string.preferences_pass_key),loginPassword.getText().toString());
         editor.apply();
     }
+
+    private void setLoginPasswordValues()
+    {
+        String log;
+        String pass;
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        log= SP.getString(getString(R.string.preferences_user_key),"");
+        pass = SP.getString(getString(R.string.preferences_pass_key),"");
+
+        loginUser.setText(log);
+        loginPassword.setText(pass);
+
+
+    }
+
+
 }
