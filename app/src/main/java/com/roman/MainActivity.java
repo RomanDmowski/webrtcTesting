@@ -144,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
     private String remoteAppRole = "";
     private String remoteUser = ""; //localUserName + "_" + remoteAppRole; //"rd1_c";
 
+    private String newLogin;
+    private String newPassword;
+
 
 // TODO reconnect after web socket failed, this also helps to initialize 'monitor' after 'camera'
 
@@ -159,6 +162,16 @@ public class MainActivity extends AppCompatActivity {
 //            wasNewUserActivityOpened=false;
 //        }
 
+        Intent intent1 = getIntent();
+        Bundle bundle = intent1.getExtras();
+
+        if (bundle != null) {
+            newLogin = bundle.getString("_newLogin");
+            newPassword = bundle.getString("_newPass");
+        } else  {
+            newLogin="";
+            newPassword="";
+        }
 
 
         isInitiator = false;    //default value
@@ -284,6 +297,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         readPreferences();
+
+        if (!newLogin.isEmpty()){
+            createNewUser (newLogin,newPassword);
+        }
 
         if (localUserName.isEmpty())
         {
@@ -946,12 +963,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void createNewUser (String newlogin, String newpass)
     {
+
+
+        if (!isWebSocketConnected) {
+            createLocalSocket();
+        }
+        isTryingReconnectWebSocket=false;
+
+
         try {
             JSONObject json = new JSONObject();
 
             json.put("type", "newuser");
-            json.put("newlogin", "test001");
-            json.put("newpass", "password02");
+            json.put("newlogin", newlogin);
+            json.put("newpass", newpass);
             wsListener.send(json.toString());
             Logging.d(TAG, "Creating newuser: " + json.toString());
         } catch (Throwable e) {
