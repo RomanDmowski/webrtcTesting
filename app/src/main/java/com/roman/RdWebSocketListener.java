@@ -121,7 +121,11 @@ class RdWebSocketListener extends WebSocketListener {
             if (typeOfMessage.equalsIgnoreCase("login")) {
                 String jsonString = new JSONObject(text).getString("success");
                 if(jsonString.equalsIgnoreCase("false")) {
-                    Logging.d(TAG, "Login failed");
+
+                    String reasonJson = new JSONObject(text).getString("reason");
+                    Logging.d(TAG, "Login failed," + reasonJson);
+                    //_reason="wrong_pass";
+                    //_reason = "multiple_users";
                 } else {
                     jsonString = new JSONObject(text).getString("ice");
                     //JSONObject json = new JSONObject(new JSONArray(text).getJSONArray("ice"));
